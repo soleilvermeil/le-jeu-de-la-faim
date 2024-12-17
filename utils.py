@@ -42,7 +42,9 @@ def coords(x: int | tuple, y: int = None) -> str:
     """
     if y is None:
         x, y = x
-    return f"({y:+}°N {x:+}°W)"
+    n = y
+    w = -x
+    return f"({n:+}°N {w:+}°W)"
 
 
 
