@@ -2,7 +2,7 @@ import game
 from typing import List, Tuple, Dict, Any, Literal
 import random
 import copy
-from constants import *
+from game.constants import *
 import os
 from tqdm import tqdm
 from openai import OpenAI
@@ -10,7 +10,7 @@ import json
 import dotenv
 from pydantic import BaseModel, Field # for ChatGPT
 from enum import Enum # for ChatGPT
-from utils import map_range, random_bool
+from utils import map_range, random_bool, smart_join
 import re
 
 
@@ -60,10 +60,11 @@ class Response(BaseModel):
     # world_situation_analysis: str = Field(description="The character's analysis of the overall game, notably on their opponents.")
     # thoughts: str = Field(description="The character's reflections or inner dialogue, providing insight into their thinking process, based on their personality.")
     story: str = Field(description="The story or narrative that the character is experiencing, from a first-person perspective.")
+    story_fr: str = Field(description="French translation of the field 'story'.")
     action: Action = Field(description="The action being taken.")
 
 
-class LLM:
+class Agent:
     def __init__(self, model: Literal["random", "ChatGPT", "cmd"], name: str):
         self.model = model
         self.name = name
@@ -82,7 +83,6 @@ class LLM:
                 "role": "system",
                 "content": system_prompt,
             }]
-            
 
 
     def give_state_of_game(self, game_state: str) -> None:
@@ -91,6 +91,7 @@ class LLM:
         used to make a decision.
         """
         self.current_state = game_state
+
 
     def interrogate(self) -> str:
         """
@@ -110,7 +111,10 @@ class LLM:
         if self.model.startswith("random"):
 
             # Find agressivity, of the form "random_#", with # in [0, 100]
-            agressivity = float(self.model.split("_")[1]) / 100
+            if "_" in self.model:
+                agressivity = float(self.model.split("_")[1]) / 100
+            else:
+                agressivity = 0.5
 
             # Chose first round's action based on agressivity
             if self.current_state["game"]["day"] == 0:
@@ -151,10 +155,6 @@ class LLM:
             # min_supply = min(food, water)
             # return random.choices([Action.GATHER, Action.HUNT], weights=[agressivity, 1 - agressivity])[0]
             return "hunt"
-
-
-
-
 
 
         elif self.model == "ChatGPT":
@@ -214,9 +214,6 @@ class LLM:
                 # Ask the user to input an action
                 action = input(f"What do you want to do? ({possible_actions})\n")
 
-            # Clear the console
-            # os.system("cls" if os.name == "nt" else "clear")
-
             # Return
             return action
 
@@ -227,36 +224,8 @@ class LLM:
     def is_alive(self) -> bool:
         return self.current_state["players"][self.name]["state"]["alive"]
             
-def main():
 
-    # Create the agents
-    agents = [
-        # LLM("cmd", "Julien"),
-        # LLM("ChatGPT", "Alice"),
-        # LLM("ChatGPT", "Bob"),
-        # LLM("ChatGPT", "Charlie"),
-        # LLM("ChatGPT", "David"),
-        # LLM("ChatGPT", "Eve"),
-        LLM("random_10", "10Frank"),
-        LLM("random_15", "15Grace"),
-        LLM("random_20", "20Hannah"),
-        LLM("random_25", "25Ivy"),
-        LLM("random_30", "30Julien"),
-        LLM("random_35", "35Katniss"),
-        LLM("random_40", "40Liam"),
-        LLM("random_45", "45Mallory"),
-        LLM("random_50", "50Nathan"),
-        LLM("random_55", "55Olivia"),
-        LLM("random_60", "60Peter"),
-        LLM("random_65", "65Quinn"),
-        LLM("random_70", "70Ryan"),
-        LLM("random_75", "75Sarah"),
-        LLM("random_80", "80Tom"),
-        LLM("random_85", "85Uma"),
-        LLM("random_90", "90Victor"),
-        LLM("random_95", "95Wendy"),
-        LLM("random_99", "99Xavier"),
-    ]
+def main(agents: List[Agent]) -> None:
 
     # Create the game object
     game_ = game.Game(character_names=[agent.name for agent in agents])
@@ -323,23 +292,13 @@ def main():
 
     # Print the winner
     if VERBOSE:
-        print("Game over! Winner is " + ", ".join([c.name for c in game_.get_alive_characters()]))
+        print("Game over! Winner is " + smart_join(lst=[c.name for c in game_.get_alive_characters()], sep=", ", last_sep=" and ") + "!")
 
     # Save the game log
     debug_messages = []
     for state in state_history:
         debug_messages.append(messages2str(state["debug"]))
         debug_messages.append("")
-
     os.makedirs("logs", exist_ok=True)
     with open(os.path.join("logs", f"log_{game_.id}.txt"), "w", encoding="utf8") as f:
         f.write(messages2str(debug_messages) + "\n")
-
-
-if __name__ == "__main__":
-        
-    # Read OpenAI API key inside .env file
-    dotenv.load_dotenv()
-
-    for _ in range(100):
-        main()
