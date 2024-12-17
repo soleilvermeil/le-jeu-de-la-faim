@@ -204,7 +204,7 @@ class Agent:
         return self.current_state["players"][self.name]["state"]["alive"]
             
 
-def main(agents: List[Agent], verbose: bool = True) -> None:
+def main(agents: List[Agent], verbose: bool = False) -> None:
 
     # Create the game object
     game_ = game.Game(character_names=[agent.name for agent in agents])
@@ -225,9 +225,10 @@ def main(agents: List[Agent], verbose: bool = True) -> None:
         state_history.append(copy.deepcopy(state))
         
         # Print the public messages
-        print(str2border("PUBLIC BEGIN"))
-        print(messages2str(state["game"]["public_messages"]))
-        print(str2border("PUBLIC END"))
+        if verbose:
+            print(str2border("PUBLIC BEGIN"))
+            print(messages2str(state["game"]["public_messages"]))
+            print(str2border("PUBLIC END"))
             
         # Send to all agents the state of the game
         for agent in agents:
@@ -264,10 +265,6 @@ def main(agents: List[Agent], verbose: bool = True) -> None:
 
         # Update the game once all agents have made their decisions
         game_.update_game()
-
-        # Press enter to continue
-        if verbose:
-            _ = input("Press enter to continue...")
 
     # Print the winner
     if verbose:
