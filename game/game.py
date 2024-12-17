@@ -273,7 +273,7 @@ class Game:
             players_in_same_cell = self.__get_characters_in_cell(current_position)
             static_players_in_same_cell = [player for player in players_in_same_cell if player in static_players]
             if len(static_players_in_same_cell) > 0:
-                character.current_spotted_players = static_players_in_same_cell
+                character.current_spotted_players = len(static_players_in_same_cell)
                 self.save_message("👀👀 You spotted {players} nearby".format(players=smart_join([p.name for p in static_players_in_same_cell], sep=", ", last_sep=" and ")), channel=character.name)
                 self.save_message("👀👀 {player} spoted {players} nearby".format(player=character.name, players=smart_join([p.name for p in static_players_in_same_cell], sep=", ", last_sep=" and ")), channel="debug")
 
