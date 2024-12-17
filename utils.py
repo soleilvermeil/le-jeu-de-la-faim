@@ -100,38 +100,15 @@ def bootstrap(lst: list, iterations: int = 10000) -> Dict[str, Dict[str, float]]
     return result
 
 
-# def jackknife(lst: list) -> Dict[str, Dict[str, float]]:
-#     """
-#     Perform a jackknife analysis on a list. Returns a dictionnary, where the
-#     keys are the unique elements of the list and the values are also
-#     dictionnaries with the mean and the standard deviation of the ratios.
-#     """
-#     # Define ratios
-#     ratios = {
-#         element: [] for element in unique(lst)
-#     }
-
-#     for i in range(len(lst)):
-
-#         # Remove element at index `i`
-#         sample = lst[:i] + lst[i+1:]
-
-#         # Add ratios to the dictionary
-#         for element in unique(lst):
-#             ratios[element].append(sample.count(element) / len(lst))
-    
-#     # Put data in the right format
-#     result = {
-#         element: {
-#             "mean": mean(ratios[element]),
-#             "std": std(ratios[element]),
-#         } for element in unique(lst)
-#     }
-    
-#     # Return
-#     return result
-
-
-if __name__ == "__main__":
-    lst = ["likes"] * 30 + ["dislikes"] * 10 + ["neutral"] * 10
-    print(bootstrap(lst))
+def smart_join(lst: List[str], sep: str = ", ", last_sep: str = " and ") -> str:
+    """
+    Joins a list of strings with a separator and a last separator.
+    """
+    if len(lst) == 0:
+        return ""
+    elif len(lst) == 1:
+        return lst[0]
+    elif len(lst) == 2:
+        return lst[0] + last_sep + lst[1]
+    else:
+        return sep.join(lst[:-1]) + last_sep + lst[-1]
