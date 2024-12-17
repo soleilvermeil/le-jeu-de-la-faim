@@ -102,7 +102,7 @@ class Agent:
         # Split by `, `
         possible_actions = possible_actions_bulk.split(", ")
 
-        if self.model.startswith("random"):
+        if self.model == "random":
 
             # Chose first round's action
             if self.current_state["game"]["day"] == 0:
@@ -119,13 +119,13 @@ class Agent:
             # Critical behaviour if hungry or thirsty
             hunger = self.current_state["players"][self.name]["state"]["hunger"]
             thirst = self.current_state["players"][self.name]["state"]["thirst"]
-            if hunger <= game.constants.MAX_HUNGER // 2 or thirst <= game.constants.MAX_THIRST // 2:
+            if random_bool(1 - ((hunger - 1) // game.constants.MAX_HUNGER)) or random_bool(1 - ((thirst - 1) // game.constants.MAX_THIRST)):
                 return "gather"
 
             # Critical behaviour if sleepy
             energy = self.current_state["players"][self.name]["state"]["energy"]
             mental = self.current_state["players"][self.name]["state"]["mental"]
-            if energy <= 1 and self.current_state["game"]["time"] == "night":
+            if self.current_state["game"]["time"] == "night" and random_bool(1 - ((energy - 1) // game.constants.MAX_ENERGY)):
                 return "rest"
             
             # If at least one opponent spotted, hunt or hide
@@ -134,7 +134,6 @@ class Agent:
 
             # Default behaviour if everything is fine
             return random.choice(["hunt", "hide", "gather"])
-
 
         elif self.model == "ChatGPT":
             
@@ -179,7 +178,123 @@ class Agent:
             
             # Return
             return response.choices[0].message.parsed.action
+        
+        elif isinstance(self.model, dict):
 
+            # Check if the model has the right keys
+            assert ["resilience", "hostility"] == list(self.model.keys()), "Model must have keys 'resilience' and 'hostility'."
+
+            # Check if the values are between 0 and 1
+            for key in self.model.keys():
+                assert 0 <= self.model[key] <= 1, f"Model's values must be between 0 and 1. {key} is {self.model[key]}."
+
+            # Get the bravery and caution values
+            resilience = self.model["resilience"]
+            hostility = self.model["hostility"]
+
+            # Get the current state of the player
+            player_state = self.current_state["players"][self.name]["state"]
+
+            # Chose first round's action: the characters that will take the
+            # risk to run towards the cornucopia are the ones that are more
+            # hostile and less resilient.
+            if self.current_state["game"]["day"] == 0:
+                towards_proba = map_range(hostility - resilience, -1, 1, 0, 1)
+                if random_bool(towards_proba):
+                    return "run towards"
+                else:
+                    return "run away"
+            
+            # Chose movement if phase is "move", check distance and direction
+            # to the cornucopia, and chose the action accordingly.
+            if self.current_state["game"]["phase"] == "move":
+                x = player_state["x"]
+                y = player_state["y"]
+                distance_to_cornucopia = abs(x) + abs(y)
+                has_weapon = player_state["bag_weapons_count"] > 0
+                if not has_weapon:
+                    run_away_proba = map_range(hostility, 0, 1, 1, 0)
+                else:
+                    run_away_proba = map_range(hostility, 0, 1, 1, 0.5) # Less likely to stay at the cornucopia if they have a weapon and are hostile
+                directions_towards_cornucopia = []
+                directions_away_from_cornucopia = []
+                if x > 0:
+                    directions_towards_cornucopia += ["go west"] * abs(x)
+                    if x < game.constants.TERRAIN_RADIUS:
+                        directions_away_from_cornucopia += ["go east"]
+                if x < 0:
+                    directions_towards_cornucopia += ["go east"] * abs(x)
+                    if x > -game.constants.TERRAIN_RADIUS:
+                        directions_away_from_cornucopia += ["go west"]
+                if y > 0:
+                    directions_towards_cornucopia += ["go south"] * abs(y)
+                    if y < game.constants.TERRAIN_RADIUS:
+                        directions_away_from_cornucopia += ["go north"]
+                if y < 0:
+                    directions_towards_cornucopia += ["go north"] * abs(y)
+                    if y > -game.constants.TERRAIN_RADIUS:
+                        directions_away_from_cornucopia += ["go south"]
+                if not random_bool(run_away_proba):
+                    if distance_to_cornucopia > 0:
+                        # If the character has already moved towards the
+                        # cornucopia, they will continue in a similar
+                        # direction.
+                        return random.choice(directions_towards_cornucopia)
+                    else:
+                        # If the character is already at the cornucopia, they
+                        # will stay.
+                        return "stay"
+                else:
+                    if directions_away_from_cornucopia:
+                        # If the character has already moved away from the
+                        # cornucopia, they will continue in a similar
+                        # direction.
+                        return random.choice(directions_away_from_cornucopia)
+                    else:
+                        # If the character is still at the cornucopia, they
+                        # will chose a random direction.
+                        return random.choice(["go north", "go south", "go east", "go west"])
+
+
+            # Critical behaviour if hungry or thirsty: characters with high
+            # resilience will care the most about their hunger and thirst.
+            hunger = player_state["hunger"]
+            thirst = player_state["thirst"]
+            hunger_threshold = map_range(resilience, 0, 1, 0, game.constants.MAX_HUNGER)
+            thirst_threshold = map_range(resilience, 0, 1, 0, game.constants.MAX_THIRST)
+            if hunger < hunger_threshold or thirst < thirst_threshold:
+                return "gather"
+            
+            # Critical behaviour if sleepy: characters with low resilience will
+            # not care about their energy level, while characters with high
+            # resilience know that resting is dangerous. Thus, only characters
+            # with medium resilience will rest the most.
+            energy = player_state["energy"]
+            energy_threshold = map_range(abs(resilience - 0.5), 0, 0.5, game.constants.MAX_ENERGY, 0)
+            if energy < energy_threshold and self.current_state["game"]["time"] == "night":
+                return "rest"
+            
+            # Critical behaviour when at cornucopia: characters with high
+            # hostility and no weapon gather with high probability. If this
+            # does not trigger, the usual behaviour is performed.
+            if player_state["x"] == 0 and player_state["y"] == 0 and player_state["bag_weapons_count"] == 0:
+                    gather_weapon_proba = map_range(hostility, 0, 1, 0, 1)
+                    if random_bool(gather_weapon_proba):
+                        return "gather"
+            
+            # If at least one opponent spotted, hunt or hide
+            if player_state["current_spotted_players"] > 0:
+                hunt_proba = map_range(hostility, 0, 1, 0, 1)
+                if random_bool(hunt_proba):
+                    return "hunt"
+                else:
+                    return "hide"
+                
+            # Default behaviour if everything is fine
+            return random.choices(
+                ["hunt", "gather"],
+                weights=[hostility, resilience]
+            )[0]
 
         elif self.model == "cmd":
 
