@@ -110,9 +110,8 @@ class Character:
             # raise ValueError(f"Unknown direction: {direction}")
         if self.position != (x, y):
             biome = self.__game.map_.cells[(x, y)].name.replace("|", " ")
-            self.__game.save_message("🚶✅ {player} moved from {coords1} to {coords2}, and is now {biome}".format(player=self.name, coords1=coords(self.position), coords2=coords(x, y), biome=biome), channel="debug")
-        else:
-            self.__game.save_message("🚶❎ {player} stayed at {coords}".format(player=self.name, coords=coords(x, y)), channel="debug")
+            icon = self.__game.map_.cells[(x, y)].icon
+            self.__game.save_message("🚶{icon} {player} moved from {coords1} to {coords2}, and is now {biome}".format(icon=icon, player=self.name, coords1=coords(self.position), coords2=coords(x, y), biome=biome), channel="debug")
         self.position = (x, y)
 
         # Update the statistics
@@ -575,6 +574,9 @@ class Character:
             self.__game.save_message("💀💀 {player} died ".format(player=self.name), channel="public", anti_channels=[self.name])
             self.__game.save_message("💀💀 {player} died for unknown reasons ".format(player=self.name), channel="debug")
             return
+
+        # Clears the number of spotted players
+        self.current_spotted_players = 0
 
         # Reset action (should be performed last) 
         self.__current_action = "none"
