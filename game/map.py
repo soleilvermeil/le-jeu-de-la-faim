@@ -1,7 +1,7 @@
 import random
 import itertools
 from typing import Tuple
-from constants import *
+from .constants import *
 from .cell import Cell
 
 

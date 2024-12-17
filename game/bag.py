@@ -1,5 +1,5 @@
 from typing import List
-from game.weapon import Weapon
+from .weapon import Weapon
 
 class Bag:
     def __init__(self):

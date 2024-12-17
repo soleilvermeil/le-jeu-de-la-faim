@@ -3,7 +3,7 @@ import datetime
 import random
 import itertools
 from utils import *
-from constants import *
+from .constants import *
 from .character import Character
 from .map import Map
 from .weapon import Weapon
@@ -274,8 +274,8 @@ class Game:
             static_players_in_same_cell = [player for player in players_in_same_cell if player in static_players]
             if len(static_players_in_same_cell) > 0:
                 character.current_spotted_players = static_players_in_same_cell
-                self.save_message("👀👀 You spotted {players} nearby".format(players=", ".join([p.name for p in static_players_in_same_cell])), channel=character.name)
-                self.save_message("👀👀 {player} spoted {players} nearby".format(player=character.name, players=", ".join([p.name for p in static_players_in_same_cell])), channel="debug")
+                self.save_message("👀👀 You spotted {players} nearby".format(players=smart_join([p.name for p in static_players_in_same_cell], sep=", ", last_sep=" and ")), channel=character.name)
+                self.save_message("👀👀 {player} spoted {players} nearby".format(player=character.name, players=smart_join([p.name for p in static_players_in_same_cell], sep=", ", last_sep=" and ")), channel="debug")
 
 
     def __resolve_actions(self):
@@ -355,12 +355,16 @@ class Game:
 
     def __show_time_and_day(self) -> str:
 
+        if self.phase == "move":
+            prefix = "Start of "
+        else:
+            prefix = ""
         if self.time == "day":
             for channel in ["public", "debug"] + [c.name for c in self.__characters]:
-                self.save_message(f"🌞🌞 Day {self.day}", channel=channel, emphasis=True)
+                self.save_message("🌞🌞 {prefix}Day {day}".format(prefix=prefix, day=self.day), channel=channel, emphasis=True)
         else:
             for channel in ["public", "debug"] + [c.name for c in self.__characters]:
-                self.save_message(f"🌙🌙 Night {self.day}", channel=channel, emphasis=True)
+                self.save_message("🌙🌙 {prefix}Night {day}".format(prefix=prefix, day=self.day), channel=channel, emphasis=True)
 
 
     def __pass_time(self):
