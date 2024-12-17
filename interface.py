@@ -110,27 +110,14 @@ class Agent:
 
         if self.model.startswith("random"):
 
-            # Find agressivity, of the form "random_#", with # in [0, 100]
-            if "_" in self.model:
-                agressivity = float(self.model.split("_")[1]) / 100
-            else:
-                agressivity = 0.5
-
-            # Chose first round's action based on agressivity
+            # Chose first round's action
             if self.current_state["game"]["day"] == 0:
-                return random.choices(["run towards", "run away"], weights=[agressivity, 1 - agressivity])[0]
+                return random.choices(["run towards", "run away"], weights=[1, 1])[0]
             
             # Chose movement if phase is "move"
             if self.current_state["game"]["phase"] == "move":
                 
-                # Choose between move and stay
-                current_distance_from_center = abs(self.current_state["players"][self.name]["state"]["x"]) + abs(self.current_state["players"][self.name]["state"]["y"])
-                scaled_agressivity = map_range(agressivity, 0, 1, -1, 1)
-                scaled_distance = map_range(1/(current_distance_from_center + 1), 0, 1, -1, 1)
-                scaled_proba_of_moving = scaled_agressivity * scaled_distance
-                rectified_proba_of_moving = map_range(scaled_proba_of_moving, -1, 1, 1, 0)
-
-                if random_bool(rectified_proba_of_moving):
+                if random_bool(0.5):
                     return random.choice(["go north", "go south", "go east", "go west"])
                 else:
                     return "stay"
@@ -138,9 +125,7 @@ class Agent:
             # Critical behaviour if hungry or thirsty
             hunger = self.current_state["players"][self.name]["state"]["hunger"]
             thirst = self.current_state["players"][self.name]["state"]["thirst"]
-            hunger_threshold = map_range(agressivity, 0, 1, MAX_HUNGER - 1, 1)
-            thirst_threshold = map_range(agressivity, 0, 1, MAX_THIRST - 1, 1)
-            if hunger <= hunger_threshold or thirst <= thirst_threshold:
+            if hunger <= MAX_HUNGER // 2 or thirst <= MAX_THIRST // 2:
                 return "gather"
 
             # Critical behaviour if sleepy
@@ -148,13 +133,13 @@ class Agent:
             mental = self.current_state["players"][self.name]["state"]["mental"]
             if energy <= 1 and self.current_state["game"]["time"] == "night":
                 return "rest"
+            
+            # If at least one opponent spotted, hunt or hide
+            if self.current_state["players"][self.name]["state"]["current_spotted_players"]:
+                return random.choice(["hunt", "hide"])
 
-            # Making supplies or hunting based on agressivity
-            # food = self.current_state["players"][self.name]["state"]["bag_food"]
-            # water = self.current_state["players"][self.name]["state"]["bag_water"]
-            # min_supply = min(food, water)
-            # return random.choices([Action.GATHER, Action.HUNT], weights=[agressivity, 1 - agressivity])[0]
-            return "hunt"
+            # Default behaviour if everything is fine
+            return random.choice(["hunt", "hide", "gather"])
 
 
         elif self.model == "ChatGPT":
