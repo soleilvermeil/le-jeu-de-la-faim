@@ -14,9 +14,6 @@ from utils import map_range, random_bool, smart_join
 import re
 
 
-VERBOSE = False
-
-
 def messages2str(messages: List[str]) -> str:
     """
     Returns a string representation of a list of messages.
@@ -210,7 +207,7 @@ class Agent:
         return self.current_state["players"][self.name]["state"]["alive"]
             
 
-def main(agents: List[Agent]) -> None:
+def main(agents: List[Agent], verbose: bool = True) -> None:
 
     # Create the game object
     game_ = game.Game(character_names=[agent.name for agent in agents])
@@ -246,7 +243,7 @@ def main(agents: List[Agent]) -> None:
             agent.give_state_of_game(state)
 
             # Print the private messages
-            if VERBOSE:
+            if verbose:
                 print(str2border(f"{agent.name}'s turn BEGIN"))
                 print(messages2str(state["players"][agent.name]["private_messages"]))
                 print(str2border(f"{agent.name}'s turn END"))
@@ -272,11 +269,11 @@ def main(agents: List[Agent]) -> None:
         game_.update_game()
 
         # Press enter to continue
-        if VERBOSE:
+        if verbose:
             _ = input("Press enter to continue...")
 
     # Print the winner
-    if VERBOSE:
+    if verbose:
         print("Game over! Winner is " + smart_join(lst=[c.name for c in game_.get_alive_characters()], sep=", ", last_sep=" and ") + "!")
 
     # Save the game log
