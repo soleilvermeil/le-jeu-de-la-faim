@@ -109,7 +109,8 @@ class Character:
             pass
             # raise ValueError(f"Unknown direction: {direction}")
         if self.position != (x, y):
-            self.__game.save_message("🚶✅ {player} moved from {coords1} to {coords2}".format(player=self.name, coords1=coords(self.position), coords2=coords(x, y)), channel="debug")
+            biome = self.__game.map_.cells[(x, y)].name.replace("|", " ")
+            self.__game.save_message("🚶✅ {player} moved from {coords1} to {coords2}, and is now {biome}".format(player=self.name, coords1=coords(self.position), coords2=coords(x, y), biome=biome), channel="debug")
         else:
             self.__game.save_message("🚶❎ {player} stayed at {coords}".format(player=self.name, coords=coords(x, y)), channel="debug")
         self.position = (x, y)
