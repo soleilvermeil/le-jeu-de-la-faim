@@ -1,17 +1,14 @@
-import game
-from typing import List, Tuple, Dict, Any, Literal
+from typing import List, Literal
 import random
 import copy
-from game.constants import *
 import os
-from tqdm import tqdm
-from openai import OpenAI
-import json
-import dotenv
-from pydantic import BaseModel, Field # for ChatGPT
-from enum import Enum # for ChatGPT
-from utils import map_range, random_bool, smart_join
 import re
+from openai import OpenAI
+from pydantic import BaseModel, Field
+from enum import Enum
+import game
+import game.constants
+from utils import *
 
 
 def messages2str(messages: List[str]) -> str:
@@ -72,7 +69,7 @@ class Agent:
             system_prompt = open(os.path.join("ChatGPT", "system.txt")).read()
             system_prompt = system_prompt.strip()
             
-            personnality = random.choice(PERSONNALITIES)
+            personnality = random.choice(game.constants.PERSONNALITIES)
             system_prompt += "\n\n"
             system_prompt += f"You are {name}, a tribute in the Hunger Games. You are {personnality[0]}. {personnality[1]}"
             
@@ -122,7 +119,7 @@ class Agent:
             # Critical behaviour if hungry or thirsty
             hunger = self.current_state["players"][self.name]["state"]["hunger"]
             thirst = self.current_state["players"][self.name]["state"]["thirst"]
-            if hunger <= MAX_HUNGER // 2 or thirst <= MAX_THIRST // 2:
+            if hunger <= game.constants.MAX_HUNGER // 2 or thirst <= game.constants.MAX_THIRST // 2:
                 return "gather"
 
             # Critical behaviour if sleepy
