@@ -75,7 +75,7 @@ class Game:
 
     def get_state_of_game(self) -> Dict[str, str]:
 
-        # Ask the player what they want to do now
+        # Ask the character what they want to do now
         for character in self.__characters:
             if not character.alive:
                 continue
@@ -84,36 +84,39 @@ class Game:
             # instead of asking for an action
             if len(self.get_alive_characters()) == 1 and character.alive:
                 self.save_message("🎉🎉 You have won the Hunger Games! 🎉🎉 ", channel=character.name, emphasis=True)
-                self.save_message("🎉🎉 {player} has won the Hunger Games! 🎉🎉 ".format(player=character.name), channel="public", emphasis=True, anti_channels=[character.name])
-                self.save_message("🎉🎉 {player} has won the Hunger Games! 🎉🎉 ".format(player=character.name), channel="debug", emphasis=True)
+                self.save_message("🎉🎉 {character} has won the Hunger Games! 🎉🎉 ".format(character=character.name), channel="public", emphasis=True, anti_channels=[character.name])
+                self.save_message("🎉🎉 {character} has won the Hunger Games! 🎉🎉 ".format(character=character.name), channel="debug", emphasis=True)
                 continue
 
             # If the day is 0, ask the character to choose between running
             # towards the cornucopia or running away from it
             if self.day == 0:
-                self.save_message("{player}, do you want to risk going to the cornucopia, or to play it safe by running away from it? (run towards, run away) ".format(player=character.name), channel=character.name, emphasis=True)
+                self.save_message("{character}, do you want to risk going to the cornucopia, or to play it safe by running away from it? (run towards, run away) ".format(character=character.name), channel=character.name, emphasis=True)
             elif self.phase == "move":
                 map_ = self.map_.draw(discovered_cells=character.visited_cells, current_position=character.position)
-                self.save_message("{player}, you are currently at {coords}\n{map}\nWhere do you want to go? (go north, go south, go east, go west, stay) ".format(player=character.name, coords=coords(character.position), map=self.map_.draw(discovered_cells=character.visited_cells, current_position=character.position)), channel=character.name, emphasis=True)
+                self.save_message("{character}, you are currently at {coords}\n{map}\nWhere do you want to go? (go north, go south, go east, go west, stay) ".format(character=character.name, coords=coords(character.position), map=self.map_.draw(discovered_cells=character.visited_cells, current_position=character.position)), channel=character.name, emphasis=True)
             elif self.phase == "act":
                 food = character.bag.food if character.bag.food > 0 else "no"
                 water = character.bag.water if character.bag.water > 0 else "no"
                 weapon = character.get_best_weapon() if len(character.bag.weapons) > 0 else Weapon(name="no weapon", damage=1)
-                self.save_message("{player}, you have currently {food} food, {water} water, and are wielding {weapon}. What do you want to do? (hunt, gather, rest, hide) ".format(player=character.name, food=food, water=water, weapon=weapon.name), channel=character.name, emphasis=True)
+                self.save_message("{character}, you have currently {food} food, {water} water, and are wielding {weapon}. What do you want to do? (hunt, gather, rest, hide) ".format(character=character.name, food=food, water=water, weapon=weapon.name), channel=character.name, emphasis=True)
 
         # Build state
         state = {
             "game": {
                 "id": self.id,
-                "day": self.day,
-                "time": self.time,
-                "phase": self.phase,
-                "alive_characters": [c.name for c in self.get_alive_characters()],
-                "dead_characters": [c.name for c in self.get_dead_characters()],
+                "state": {
+                    "day": self.day,
+                    "time": self.time,
+                    "phase": self.phase,
+                    "alive_characters": [c.name for c in self.get_alive_characters()],
+                    "dead_characters": [c.name for c in self.get_dead_characters()],
+                },
                 "public_messages": self.public_messages,
             },
-            "players": {
+            "characters": {
                 c.name: {
+                    "name": c.name,
                     "state": c.to_dict(),
                     "private_messages": self.private_messages[c.name]
                 } for c in self.__characters
@@ -218,7 +221,7 @@ class Game:
             weapon: Weapon = Weapon(name=weapon_tuple[0], damage=weapon_tuple[1])
             character.bag.add_weapon(weapon)
             self.save_message("🔪➕ You found {weapon} ".format(weapon=weapon.name), channel=character.name)
-            self.save_message("🔪➕ {player} found a weapon ".format(player=character.name), channel="public", anti_channels=[character.name])
+            self.save_message("🔪➕ {character} found a weapon ".format(character=character.name), channel="public", anti_channels=[character.name])
 
             # Make characters kill each other
             potential_victims = [other for other in self.__characters if other != character and other.alive and other.get_action() == "run towards"]
@@ -226,10 +229,10 @@ class Game:
                 victim = random.choice(potential_victims)
                 victim.alive = False
                 victim.statistics["cause_of_death"] = "killed"
-                self.save_message("🔪💀 You managed to slain {attacked_player} ".format(attacked_player=victim.name), channel=character.name)
-                self.save_message("🔪💀 You have been slained by {attacking_player} ".format(attacking_player=character.name), channel=victim.name)
-                self.save_message("🔪💀 {attacking_player} slained {attacked_player}".format(attacking_player=character.name, attacked_player=victim.name), channel="public", anti_channels=[character.name, victim.name])
-                self.save_message("🔪💀 {attacking_player} slained {attacked_player}".format(attacking_player=character.name, attacked_player=victim.name), channel="debug")
+                self.save_message("🔪💀 You managed to slain {attacked_character} ".format(attacked_character=victim.name), channel=character.name)
+                self.save_message("🔪💀 You have been slained by {attacking_character} ".format(attacking_character=character.name), channel=victim.name)
+                self.save_message("🔪💀 {attacking_character} slained {attacked_character}".format(attacking_character=character.name, attacked_character=victim.name), channel="public", anti_channels=[character.name, victim.name])
+                self.save_message("🔪💀 {attacking_character} slained {attacked_character}".format(attacking_character=character.name, attacked_character=victim.name), channel="debug")
                 character.change_hype(HYPE_WHEN_KILLING)
 
         # Some characters that try to escape are hurt
@@ -254,28 +257,28 @@ class Game:
 
     def __resolve_movements(self):
         """
-        Every player moves according to their choice of action. When a player
-        just moved on a cell, they are informed about the players already on
+        Every character moves according to their choice of action. When a character
+        just moved on a cell, they are informed about the characters already on
         that cell, that didn't move.
         """
-        moving_players = [character for character in self.__characters if character.get_action() in ["go north", "go south", "go west", "go east"]]
-        static_players = [character for character in self.__characters if character.get_action() == "stay"]
+        moving_characters = [character for character in self.__characters if character.get_action() in ["go north", "go south", "go west", "go east"]]
+        static_characters = [character for character in self.__characters if character.get_action() == "stay"]
 
-        # Move the players
-        for character in moving_players:
+        # Move the characters
+        for character in moving_characters:
             if not character.alive:
                 continue
             character.move(character.get_action())
 
-        # Inform the players about the static players
-        for character in moving_players:
+        # Inform the characters about the static characters
+        for character in moving_characters:
             current_position = character.position
-            players_in_same_cell = self.__get_characters_in_cell(current_position)
-            static_players_in_same_cell = [player for player in players_in_same_cell if player in static_players]
-            if len(static_players_in_same_cell) > 0:
-                character.current_spotted_players = len(static_players_in_same_cell)
-                self.save_message("👀👀 You spotted {players} nearby".format(players=smart_join([p.name for p in static_players_in_same_cell], sep=", ", last_sep=" and ")), channel=character.name)
-                self.save_message("👀👀 {player} spoted {players} nearby".format(player=character.name, players=smart_join([p.name for p in static_players_in_same_cell], sep=", ", last_sep=" and ")), channel="debug")
+            characters_in_same_cell = self.__get_characters_in_cell(current_position)
+            static_characters_in_same_cell = [character for character in characters_in_same_cell if character in static_characters]
+            if len(static_characters_in_same_cell) > 0:
+                character.current_spotted_characters = len(static_characters_in_same_cell)
+                self.save_message("👀👀 You spotted {characters} nearby".format(characters=smart_join([p.name for p in static_characters_in_same_cell], sep=", ", last_sep=" and ")), channel=character.name)
+                self.save_message("👀👀 {character} spoted {characters} nearby".format(character=character.name, characters=smart_join([p.name for p in static_characters_in_same_cell], sep=", ", last_sep=" and ")), channel="debug")
 
 
     def __resolve_actions(self):
