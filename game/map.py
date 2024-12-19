@@ -7,14 +7,14 @@ from .cell import Cell
 
 class Map:
     def __init__(self, radius: int):
+        forest = Cell("in|a forest", icon="🌳")
         lake = Cell("at|a lake", icon="💦", water_multiplier=3)
         rain_forest = Cell("in|a rain forest", icon="🌴", water_multiplier=2, food_multiplier=2)
-        forest = Cell("in|a forest", icon="🌳")  # Baseline
         dry_forest = Cell("in|a dry forest", icon="🌵", water_multiplier=0)
         plain = Cell("on|a plain", icon="🌱", food_multiplier=0, water_multiplier=0)
         cornucopia = Cell("at|the cornucopia", icon="🌽", weapon_proba_multiplier=3, dangerous_weapon_proba=1)
         self.cells = {
-            (x, y): random.choice([lake, rain_forest, forest, dry_forest, plain])
+            (x, y): random.choices([forest, lake, rain_forest, dry_forest, plain], weights=[2, 1, 1, 1, 1])[0]
             for x, y in itertools.product(range(-radius, radius+1), range(-radius, radius+1)) if (x, y) != (0, 0)
         }
         self.cells[(0, 0)] = cornucopia
