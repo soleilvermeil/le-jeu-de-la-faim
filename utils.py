@@ -114,3 +114,53 @@ def smart_join(lst: List[str], sep: str = ", ", last_sep: str = " and ") -> str:
         return lst[0] + last_sep + lst[1]
     else:
         return sep.join(lst[:-1]) + last_sep + lst[-1]
+    
+
+def flatten_dict(
+    dct: dict,
+    list_transform: callable = (lambda x : x),
+    str_transform: callable = (lambda x : x),
+    sep: str = ".") -> dict:
+    """
+    Flattens a dictionary that has nested dictionaries as values.
+    For example, if `dct` is:
+    ```
+    {
+        "a": 1,
+        "b": {
+            "c": 2,
+            "d": 3,
+        }
+    }
+    ```
+    the flattened dict is going to be:
+    ```
+    {
+        "a": 1,
+        "b.c": 2,
+        "b.d": 3,
+    }
+    ```
+    """
+
+    def _flatten(d, parent_key=""):
+        items = []
+        for key, value in d.items():
+            new_key = f"{parent_key}{sep}{key}" if parent_key else key
+            if isinstance(value, dict):
+                items.extend(_flatten(value, new_key).items())
+            else:
+                items.append((new_key, value))
+        return dict(items)
+    
+    new_dct = _flatten(dct)
+
+    for key, value in new_dct.items():
+        if isinstance(value, list):
+            new_dct[key] = list_transform(value)
+
+    for key, value in new_dct.items():
+        if isinstance(value, str):
+            new_dct[key] = str_transform(value)
+
+    return new_dct
