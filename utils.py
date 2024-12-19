@@ -120,7 +120,7 @@ def flatten_dict(
     dct: dict,
     list_transform: callable = (lambda x : x),
     str_transform: callable = (lambda x : x),
-    sep: str = ".") -> dict:
+    sep: str = "_") -> dict:
     """
     Flattens a dictionary that has nested dictionaries as values.
     For example, if `dct` is:
@@ -137,8 +137,8 @@ def flatten_dict(
     ```
     {
         "a": 1,
-        "b.c": 2,
-        "b.d": 3,
+        "b_c": 2,
+        "b_d": 3,
     }
     ```
     """
