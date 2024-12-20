@@ -9,6 +9,8 @@ from enum import Enum
 import game
 import game.constants
 from utils import *
+import json # only for logging
+import pandas as pd # only for logging
 
 
 def messages2str(messages: List[str]) -> str:
@@ -94,7 +96,7 @@ class Agent:
         """
 
         # Get the possible actions
-        full_message = messages2str(self.current_state["players"][self.name]["private_messages"])
+        full_message = messages2str(self.current_state["characters"][self.name]["private_messages"])
 
         # Start by getting the text in parentheses
         possible_actions_bulk = re.findall(r"\((.*?)\)", full_message)[-1]
@@ -105,11 +107,11 @@ class Agent:
         if self.model == "random":
 
             # Chose first round's action
-            if self.current_state["game"]["day"] == 0:
+            if self.current_state["game"]["state"]["day"] == 0:
                 return random.choices(["run towards", "run away"], weights=[1, 1])[0]
             
             # Chose movement if phase is "move"
-            if self.current_state["game"]["phase"] == "move":
+            if self.current_state["game"]["state"]["phase"] == "move":
                 
                 if random_bool(0.5):
                     return random.choice(["go north", "go south", "go east", "go west"])
@@ -117,19 +119,19 @@ class Agent:
                     return "stay"
 
             # Critical behaviour if hungry or thirsty
-            hunger = self.current_state["players"][self.name]["state"]["hunger"]
-            thirst = self.current_state["players"][self.name]["state"]["thirst"]
+            hunger = self.current_state["characters"][self.name]["state"]["hunger"]
+            thirst = self.current_state["characters"][self.name]["state"]["thirst"]
             if random_bool(1 - ((hunger - 1) // game.constants.MAX_HUNGER)) or random_bool(1 - ((thirst - 1) // game.constants.MAX_THIRST)):
                 return "gather"
 
             # Critical behaviour if sleepy
-            energy = self.current_state["players"][self.name]["state"]["energy"]
-            mental = self.current_state["players"][self.name]["state"]["mental"]
-            if self.current_state["game"]["time"] == "night" and random_bool(1 - ((energy - 1) // game.constants.MAX_ENERGY)):
+            energy = self.current_state["characters"][self.name]["state"]["energy"]
+            mental = self.current_state["characters"][self.name]["state"]["mental"]
+            if self.current_state["game"]["state"]["time"] == "night" and random_bool(1 - ((energy - 1) // game.constants.MAX_ENERGY)):
                 return "rest"
             
             # If at least one opponent spotted, hunt or hide
-            if self.current_state["players"][self.name]["state"]["current_spotted_players"]:
+            if self.current_state["characters"][self.name]["state"]["current_spotted_characters"]:
                 return random.choice(["hunt", "hide"])
 
             # Default behaviour if everything is fine
@@ -140,7 +142,7 @@ class Agent:
             # Build message to send
             message_to_send = (
                 str2border("Public POV (begin)") + "\n" + messages2str(self.current_state["game"]["public_messages"]) + "\n" + str2border("Public POV (end)") + "\n" + 
-                str2border("Private POV (begin)") + "\n" + messages2str(self.current_state["players"][self.name]["private_messages"]) + "\n" + str2border("Private POV (end)") + "\n"
+                str2border("Private POV (begin)") + "\n" + messages2str(self.current_state["characters"][self.name]["private_messages"]) + "\n" + str2border("Private POV (end)") + "\n"
             )
 
             final_message_to_send = {
@@ -192,114 +194,145 @@ class Agent:
             resilience = self.model["resilience"]
             hostility = self.model["hostility"]
 
-            # Get the current state of the player
-            player_state = self.current_state["players"][self.name]["state"]
 
-            # Chose first round's action: the characters that will take the
-            # risk to run towards the cornucopia are the ones that are more
-            # hostile and less resilient.
-            if self.current_state["game"]["day"] == 0:
-                towards_proba = map_range(hostility - resilience, -1, 1, 0, 1)
-                if random_bool(towards_proba):
-                    return "run towards"
-                else:
-                    return "run away"
+            if self.current_state["game"]["state"]["day"] == 0:
+                return random.choices(
+                    ["run towards", "run away"],
+                    weights=[
+                        map_range(hostility - resilience, -1, 1, 0, 1),
+                        map_range(hostility - resilience, -1, 1, 1, 0)
+                    ]
+                )[0]
+            elif self.current_state["game"]["state"]["phase"] == "move":
+                return random.choices(
+                    [random.choice(["go north", "go south", "go east", "go west"])] + ["stay"],
+                    weights=[
+                        map_range(hostility - resilience, -1, 1, 1, 0),
+                        map_range(hostility - resilience, -1, 1, 0, 1)]
+                )[0]
+            else:
+                hunger = self.current_state["characters"][self.name]["state"]["hunger"]
+                thirst = self.current_state["characters"][self.name]["state"]["thirst"]
+                energy = self.current_state["characters"][self.name]["state"]["energy"]
+                return random.choices(
+                    ["hunt", "gather", "rest", "hide"],
+                    weights=[
+                        1 * map_range(hostility, 0, 1, 0, 1),
+                        1 * map_range(resilience, 0, 1, 0, 1) * max(map_range(hunger, 0, game.constants.MAX_HUNGER, 1, 0), map_range(thirst, 0, game.constants.MAX_THIRST, 1, 0)),
+                        1 * map_range(resilience, 0, 1, 1, 0) * map_range(energy, 0, game.constants.MAX_ENERGY, 1, 0),
+                        1 * map_range(hostility, 0, 1, 1, 0),
+                    ]
+                )[0]
+
+            # # Get the current state of the character
+            # character_state = self.current_state["characters"][self.name]["state"]
+
+            # # Chose first round's action: the characters that will take the
+            # # risk to run towards the cornucopia are the ones that are more
+            # # hostile and less resilient.
+            # if self.current_state["game"]["state"]["day"] == 0:
+            #     towards_proba = map_range(hostility - resilience, -1, 1, 0, 1)
+            #     if random_bool(towards_proba):
+            #         return "run towards"
+            #     else:
+            #         return "run away"
             
-            # Chose movement if phase is "move", check distance and direction
-            # to the cornucopia, and chose the action accordingly.
-            if self.current_state["game"]["phase"] == "move":
-                x = player_state["x"]
-                y = player_state["y"]
-                distance_to_cornucopia = abs(x) + abs(y)
-                has_weapon = player_state["bag_weapons_count"] > 0
-                if not has_weapon:
-                    run_away_proba = map_range(hostility, 0, 1, 1, 0)
-                else:
-                    run_away_proba = map_range(hostility, 0, 1, 1, 0.5) # Less likely to stay at the cornucopia if they have a weapon and are hostile
-                directions_towards_cornucopia = []
-                directions_away_from_cornucopia = []
-                if x > 0:
-                    directions_towards_cornucopia += ["go west"] * abs(x)
-                    if x < game.constants.TERRAIN_RADIUS:
-                        directions_away_from_cornucopia += ["go east"]
-                if x < 0:
-                    directions_towards_cornucopia += ["go east"] * abs(x)
-                    if x > -game.constants.TERRAIN_RADIUS:
-                        directions_away_from_cornucopia += ["go west"]
-                if y > 0:
-                    directions_towards_cornucopia += ["go south"] * abs(y)
-                    if y < game.constants.TERRAIN_RADIUS:
-                        directions_away_from_cornucopia += ["go north"]
-                if y < 0:
-                    directions_towards_cornucopia += ["go north"] * abs(y)
-                    if y > -game.constants.TERRAIN_RADIUS:
-                        directions_away_from_cornucopia += ["go south"]
-                if not random_bool(run_away_proba):
-                    if distance_to_cornucopia > 0:
-                        # If the character has already moved towards the
-                        # cornucopia, they will continue in a similar
-                        # direction.
-                        return random.choice(directions_towards_cornucopia)
-                    else:
-                        # If the character is already at the cornucopia, they
-                        # will stay.
-                        return "stay"
-                else:
-                    if directions_away_from_cornucopia:
-                        # If the character has already moved away from the
-                        # cornucopia, they will continue in a similar
-                        # direction.
-                        return random.choice(directions_away_from_cornucopia)
-                    else:
-                        # If the character is still at the cornucopia, they
-                        # will chose a random direction.
-                        return random.choice(["go north", "go south", "go east", "go west"])
+            # # Chose movement if phase is "move", check distance and direction
+            # # to the cornucopia, and chose the action accordingly.
+            # if self.current_state["game"]["state"]["phase"] == "move":
+            #     x = character_state["x"]
+            #     y = character_state["y"]
+            #     distance_to_cornucopia = abs(x) + abs(y)
+            #     has_weapon = character_state["bag_weapons_count"] > 0
+            #     if not has_weapon:
+            #         run_away_proba = map_range(hostility, 0, 1, 1, 0)
+            #     else:
+            #         run_away_proba = map_range(hostility, 0, 1, 1, 0.5) # Less likely to stay at the cornucopia if they have a weapon and are hostile
+            #     directions_towards_cornucopia = []
+            #     directions_away_from_cornucopia = []
+            #     if x > 0:
+            #         directions_towards_cornucopia += ["go west"] * abs(x)
+            #         if x < game.constants.TERRAIN_RADIUS:
+            #             directions_away_from_cornucopia += ["go east"]
+            #     if x < 0:
+            #         directions_towards_cornucopia += ["go east"] * abs(x)
+            #         if x > -game.constants.TERRAIN_RADIUS:
+            #             directions_away_from_cornucopia += ["go west"]
+            #     if y > 0:
+            #         directions_towards_cornucopia += ["go south"] * abs(y)
+            #         if y < game.constants.TERRAIN_RADIUS:
+            #             directions_away_from_cornucopia += ["go north"]
+            #     if y < 0:
+            #         directions_towards_cornucopia += ["go north"] * abs(y)
+            #         if y > -game.constants.TERRAIN_RADIUS:
+            #             directions_away_from_cornucopia += ["go south"]
+            #     if not random_bool(run_away_proba):
+            #         if distance_to_cornucopia > 0:
+            #             # If the character has already moved towards the
+            #             # cornucopia, they will continue in a similar
+            #             # direction.
+            #             return random.choice(directions_towards_cornucopia)
+            #         else:
+            #             # If the character is already at the cornucopia, they
+            #             # will stay.
+            #             return "stay"
+            #     else:
+            #         if directions_away_from_cornucopia:
+            #             # If the character has already moved away from the
+            #             # cornucopia, they will continue in a similar
+            #             # direction.
+            #             return random.choice(directions_away_from_cornucopia)
+            #         else:
+            #             # If the character is still at the cornucopia, they
+            #             # will chose a random direction.
+            #             return random.choice(["go north", "go south", "go east", "go west"])
 
 
-            # Critical behaviour if hungry or thirsty: characters with high
-            # resilience will care the most about their hunger and thirst.
-            hunger = player_state["hunger"]
-            thirst = player_state["thirst"]
-            hunger_threshold = map_range(resilience, 0, 1, 0, game.constants.MAX_HUNGER)
-            thirst_threshold = map_range(resilience, 0, 1, 0, game.constants.MAX_THIRST)
-            if hunger < hunger_threshold or thirst < thirst_threshold:
-                return "gather"
+            # # Critical behaviour if hungry or thirsty: characters with high
+            # # resilience will care the most about their hunger and thirst.
+            # hunger = character_state["hunger"]
+            # thirst = character_state["thirst"]
+            # hunger_threshold = map_range(resilience, 0, 1, 1, game.constants.MAX_HUNGER - 1)
+            # thirst_threshold = map_range(resilience, 0, 1, 1, game.constants.MAX_THIRST - 1)
+            # if hunger <= hunger_threshold or thirst <= thirst_threshold:
+            #     pass
+            #     # return "gather"
             
-            # Critical behaviour if sleepy: characters with low resilience will
-            # not care about their energy level, while characters with high
-            # resilience know that resting is dangerous. Thus, only characters
-            # with medium resilience will rest the most.
-            energy = player_state["energy"]
-            energy_threshold = map_range(abs(resilience - 0.5), 0, 0.5, game.constants.MAX_ENERGY, 0)
-            if energy < energy_threshold and self.current_state["game"]["time"] == "night":
-                return "rest"
+            # # Critical behaviour if sleepy: characters with low resilience will
+            # # not care about their energy level, while characters with high
+            # # resilience know that resting is dangerous. Thus, only characters
+            # # with medium resilience will rest the most.
+            # energy = character_state["energy"]
+            # energy_threshold = map_range(abs(resilience - 0.5), 0, 0.5, game.constants.MAX_ENERGY, 0)
+            # if energy < energy_threshold and self.current_state["game"]["state"]["time"] == "night":
+            #     return "rest"
             
-            # Critical behaviour when at cornucopia: characters with high
-            # hostility and no weapon gather with high probability. If this
-            # does not trigger, the usual behaviour is performed.
-            if player_state["x"] == 0 and player_state["y"] == 0 and player_state["bag_weapons_count"] == 0:
-                    gather_weapon_proba = map_range(hostility, 0, 1, 0, 1)
-                    if random_bool(gather_weapon_proba):
-                        return "gather"
+            # # Critical behaviour when at cornucopia: characters with high
+            # # hostility and no weapon gather with high probability. If this
+            # # does not trigger, the usual behaviour is performed.
+            # if character_state["x"] == 0 and character_state["y"] == 0 and character_state["bag_weapons_count"] == 0:
+            #         gather_weapon_proba = map_range(hostility, 0, 1, 0, 1)
+            #         if random_bool(gather_weapon_proba):
+            #             return "gather"
             
-            # If at least one opponent spotted, hunt or hide
-            if player_state["current_spotted_players"] > 0:
-                hunt_proba = map_range(hostility, 0, 1, 0, 1)
-                if random_bool(hunt_proba):
-                    return "hunt"
-                else:
-                    return "hide"
+            # # If at least one opponent spotted, hunt or hide
+            # if character_state["current_spotted_characters"] > 0:
+            #     hunt_proba = map_range(hostility - resilience, -1, 1, 0, 1)
+            #     if random_bool(hunt_proba):
+            #         return "hunt"
+            #     else:
+            #         return "hide"
                 
-            # Default behaviour if everything is fine
-            return random.choices(
-                ["hunt", "gather"],
-                weights=[hostility, resilience]
-            )[0]
+            # # Default behaviour if everything is fine
+            # return random.choices(
+            #     ["hunt", "gather"],
+            #     weights=[hostility, resilience]
+            # )[0]
 
         elif self.model == "cmd":
 
             # Print to console the private message
-            print(messages2str(self.current_state["players"][self.name]["private_messages"]))
+            print(messages2str(self.current_state["characters"][self.name]["private_messages"]))
 
             action = ""
 
@@ -316,7 +349,7 @@ class Agent:
             raise ValueError(f"Model {self.model} not recognized.")
             
     def is_alive(self) -> bool:
-        return self.current_state["players"][self.name]["state"]["alive"]
+        return self.current_state["characters"][self.name]["state"]["alive"]
             
 
 def main(agents: List[Agent], verbose: bool = False) -> None:
@@ -331,7 +364,7 @@ def main(agents: List[Agent], verbose: bool = False) -> None:
     state = {}
     state_history = []
 
-    while not state or len(state["game"]["alive_characters"]) > 1:
+    while not state or len(state["game"]["state"]["alive_characters"]) > 1:
 
         # Get the current state of the game
         state = game_.get_state_of_game()
@@ -348,8 +381,8 @@ def main(agents: List[Agent], verbose: bool = False) -> None:
         # Send to all agents the state of the game
         for agent in agents:
 
-            # If player has been dead last turn, skip
-            if len(state_history) >= 2 and not state_history[-2]["players"][agent.name]["state"]["alive"]:
+            # If character has been dead last turn, skip
+            if len(state_history) >= 2 and not state_history[-2]["characters"][agent.name]["state"]["alive"]:
                 continue
             
             # Communicate the state of the game to the agent
@@ -358,21 +391,21 @@ def main(agents: List[Agent], verbose: bool = False) -> None:
             # Print the private messages
             if verbose:
                 print(str2border(f"{agent.name}'s turn BEGIN"))
-                print(messages2str(state["players"][agent.name]["private_messages"]))
+                print(messages2str(state["characters"][agent.name]["private_messages"]))
                 print(str2border(f"{agent.name}'s turn END"))
 
-        # If only a single player is left, exit the loop
-        if len(state["game"]["alive_characters"]) == 1:
+        # If only a single character is left, exit the loop
+        if len(state["game"]["state"]["alive_characters"]) == 1:
             break
 
         # Ask each agent to make a decision
         for agent in agents:
             
             # Check if still alive
-            if not state["players"][agent.name]["state"]["alive"]:
+            if not state["characters"][agent.name]["state"]["alive"]:
                 continue
 
-            # Ask the agent to make a decision if the player is still alive
+            # Ask the agent to make a decision if the character is still alive
             action = agent.interrogate()
 
             # Send the decision to the game
@@ -393,3 +426,38 @@ def main(agents: List[Agent], verbose: bool = False) -> None:
     os.makedirs("logs", exist_ok=True)
     with open(os.path.join("logs", f"log_{game_.id}.txt"), "w", encoding="utf8") as f:
         f.write(messages2str(debug_messages) + "\n")
+
+    # # Save the full state history
+    # data = {}
+    # for state in state_history:
+    #     state_flat = flatten_dict(state, list_transform=messages2str, str_transform=lambda x: x if "\n" not in x else "<str>")
+    #     # state_flat = flatten_dict(state, list_transform=messages2str, str_transform=lambda x: x.replace("\n", ";"))
+    #     if not data:
+    #         for key in state_flat.keys():
+    #             data[key] = [state_flat[key]]
+    #     else:
+    #         for key in state_flat.keys():
+    #             data[key].append(state_flat[key])
+    # df = pd.DataFrame(data)
+    # df.to_csv(os.path.join("logs", f"log_{game_.id}.tsv"), sep="\t", index=False, encoding="utf8")
+
+    # Save the full state history
+    data = {}
+    for state in state_history:
+        game_state = state["game"]
+        for character in list(state["characters"].keys()):
+            character_state = state["characters"][character]
+            
+            flattened_game_state = flatten_dict({"game": game_state}, list_transform=lambda x: "<list>", str_transform=lambda x: x if "\n" not in x else "<str>")
+            flattened_character_state = flatten_dict({"character": character_state}, list_transform=lambda x: "<list>", str_transform=lambda x: x if "\n" not in x else "<str>")
+            
+            combined_state = {**flattened_game_state, **flattened_character_state}
+
+            if not data:
+                for key in combined_state.keys():
+                    data[key] = [combined_state[key]]
+            else:
+                for key in combined_state.keys():
+                    data[key].append(combined_state[key])
+    df = pd.DataFrame(data)
+    df.to_csv(os.path.join("logs", f"log_{game_.id}.tsv"), sep="\t", index=False, encoding="utf8")
