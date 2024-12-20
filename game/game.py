@@ -170,9 +170,16 @@ class Game:
 
             # Show time
             self.__show_time_and_day()
+            
+            if self.time == "night" and random_bool(EVENT_PROBABILITY):
+                
+                # Resolve random event
+                self.__resolve_random_event()
 
-            # Resolve actions
-            self.__resolve_actions()
+            else:
+
+                # Resolve actions
+                self.__resolve_actions()
 
             # Pass time
             self.__pass_time()
@@ -359,9 +366,10 @@ class Game:
     
     def __resolve_random_event(self):
         """
-        During the game, events can happen. Half of the terrain will be
-        dangerous at night, and characters randomly move. The ones who do not
-        move out of the dangerous zone will be killed.
+        During the game, events can happen. Approximately half of the terrain
+        will be dangerous at night, and characters randomly move. The ones who
+        do not move out of the dangerous zone will be killed. Note that the
+        event will focus regions where tributes have the lowest average hype.
         """
 
 
@@ -377,7 +385,17 @@ class Game:
         characters_in_hazard_zones = {}
         for key, element in hazard_cells.items():
             characters_in_hazard_zones[key] = [c for c in self.__characters if c.alive and c.position in element]
-            hazard_zone_weights[key] = len(characters_in_hazard_zones[key])
+            
+            characters_count = len(characters_in_hazard_zones[key])
+            sum_of_hypes = sum([c.hype for c in characters_in_hazard_zones[key]])
+            if characters_count > 0:
+                average_hype = sum_of_hypes / characters_count
+                zone_weight = 1 / average_hype
+            else:
+                average_hype = 0
+                zone_weight = 0
+            hazard_zone_weights[key] = average_hype
+            self.save_message(f"🔥🔥 Hazard zone {key} has {characters_count} characters with an average hype of {average_hype}", channel="debug")
         
         # Abort if no character
         if sum(list(hazard_zone_weights.values())) == 0:
