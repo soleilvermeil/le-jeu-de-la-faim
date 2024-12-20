@@ -411,9 +411,9 @@ class Character:
             self.__game.save_message("🎁🎉 An unknown sponsor sent a gift to {character} ".format(character=self.name), channel="public")
             self.__game.save_message("🎁🎉 An unknown sponsor sent a gift to {character} (proba = {proba}) ".format(character=self.name, proba=f"{self.hype / MAX_HYPE:.0%}"), channel="debug")
             potential_gift = []
-            if self.bag.water == 0 and self.hunger < MAX_THIRST:
+            if self.bag.water == 0 and self.thirst < MAX_THIRST:
                 potential_gift.append("water")
-            if self.bag.food == 0 and self.thirst < MAX_HUNGER:
+            if self.bag.food == 0 and self.hunger < MAX_HUNGER:
                 potential_gift.append("food")
             if self.health < MAX_HEALTH:
                 potential_gift.append("medecine")
