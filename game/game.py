@@ -174,7 +174,11 @@ class Game:
             if self.time == "night" and random_bool(EVENT_PROBABILITY):
                 
                 # Resolve random event
-                self.__resolve_random_event()
+                status = self.__resolve_random_event()
+                
+                # If the event was aborted, resolve actions instead
+                if status == "aborted":
+                    self.__resolve_actions()
 
             else:
 
@@ -364,14 +368,18 @@ class Game:
                     self.save_message(f"🛌🔪 {character.name} couldn't rest because of the assault", channel="debug")
     
     
-    def __resolve_random_event(self):
+    def __resolve_random_event(self) -> Literal["success", "aborted"]:
         """
         During the game, events can happen. Approximately half of the terrain
         will be dangerous at night, and characters randomly move. The ones who
         do not move out of the dangerous zone will be killed. Note that the
         event will focus regions where tributes have the lowest average hype.
+        
+        Returns a string indicating if the random event did indeed occur, or if
+        it was aborted. If aborted, a normal turn should be performed.
         """
-
+        # Get count of alive characters
+        alive_characters = len(self.get_alive_characters())
 
         # Get all possible hazard zones
         cells = list(itertools.product(range(-TERRAIN_RADIUS, TERRAIN_RADIUS + 1), repeat=2))
@@ -388,18 +396,29 @@ class Game:
             
             characters_count = len(characters_in_hazard_zones[key])
             sum_of_hypes = sum([c.hype for c in characters_in_hazard_zones[key]])
-            if characters_count > 0:
+            
+            if characters_count == alive_characters:
+                # Never take a hazard zone were all characters are in
+                average_hype = sum_of_hypes / characters_count
+                zone_weight = 0
+            elif characters_count > 0 and sum_of_hypes > 0:
+                # Usual case
                 average_hype = sum_of_hypes / characters_count
                 zone_weight = 1 / average_hype
+            elif characters_count > 0:
+                # If no hype, the weight is the number of characters in the zone (which is usually a low enough number for the weight to be very high)
+                average_hype = sum_of_hypes / characters_count
+                zone_weight = characters_count
             else:
+                # If no character, set everything to 0
                 average_hype = 0
                 zone_weight = 0
-            hazard_zone_weights[key] = average_hype
-            self.save_message(f"🔥🔥 Hazard zone {key} has {characters_count} characters with an average hype of {average_hype}", channel="debug")
+            hazard_zone_weights[key] = zone_weight
+            self.save_message(f"🔥🔥 Hazard zone {key} has {characters_count} characters with an average hype of {average_hype:.2f} (weight = {zone_weight:.2f})", channel="debug")
         
-        # Abort if no character
+        # Abort if no valid hazard zone is found
         if sum(list(hazard_zone_weights.values())) == 0:
-            return
+            return "aborted"
         
         # Define hazard zone
         hazard_zone = random.choices(list(hazard_zone_weights.keys()), list(hazard_zone_weights.values()))[0]
