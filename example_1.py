@@ -32,4 +32,4 @@ if __name__ == '__main__':
         Agent("Zulu", "random"),
     ]
     
-    main(agents)
+    main(agents, verbose=True)

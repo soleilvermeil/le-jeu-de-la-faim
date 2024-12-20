@@ -52,8 +52,11 @@ if __name__ == '__main__':
             agents.append(Agent(name=name, model=PERSONNALITIES[personnality]))
 
     # Delete the logs folder
-    shutil.rmtree("logs", ignore_errors=True)
+    try:
+        shutil.rmtree("logs", ignore_errors=True)
+    except OSError:
+        pass
 
     # Run the game
     for i in tqdm(range(1000)):
-        main(agents)
+        main(agents, save_tsv=True)

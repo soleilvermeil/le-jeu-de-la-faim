@@ -84,4 +84,4 @@ if __name__ == '__main__':
     ]
 
     # Run the game
-    main(agents)
+    main(agents, save_txt=True)
