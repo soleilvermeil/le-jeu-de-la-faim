@@ -170,9 +170,16 @@ class Game:
 
             # Show time
             self.__show_time_and_day()
+            
+            if self.time == "night" and random_bool(EVENT_PROBABILITY):
+                
+                # Resolve random event
+                self.__resolve_random_event()
 
-            # Resolve actions
-            self.__resolve_actions()
+            else:
+
+                # Resolve actions
+                self.__resolve_actions()
 
             # Pass time
             self.__pass_time()
@@ -355,7 +362,90 @@ class Game:
                 if character.get_action() == "rest" and character in attacks.values() and character.alive:
                     self.save_message(f"🛌🔪 Because of the assault, you couldn't get a wink of sleep", channel=character.name)
                     self.save_message(f"🛌🔪 {character.name} couldn't rest because of the assault", channel="debug")
+    
+    
+    def __resolve_random_event(self):
+        """
+        During the game, events can happen. Approximately half of the terrain
+        will be dangerous at night, and characters randomly move. The ones who
+        do not move out of the dangerous zone will be killed. Note that the
+        event will focus regions where tributes have the lowest average hype.
+        """
 
+
+        # Get all possible hazard zones
+        cells = list(itertools.product(range(-TERRAIN_RADIUS, TERRAIN_RADIUS + 1), repeat=2))
+        hazard_cells = {}
+        hazard_cells["north"] = [c for c in cells if c[1] > 0]
+        hazard_cells["south"] = [c for c in cells if c[1] < 0]
+        hazard_cells["east"] = [c for c in cells if c[0] < 0]
+        hazard_cells["west"] = [c for c in cells if c[0] > 0]
+        
+        hazard_zone_weights = {}
+        characters_in_hazard_zones = {}
+        for key, element in hazard_cells.items():
+            characters_in_hazard_zones[key] = [c for c in self.__characters if c.alive and c.position in element]
+            
+            characters_count = len(characters_in_hazard_zones[key])
+            sum_of_hypes = sum([c.hype for c in characters_in_hazard_zones[key]])
+            if characters_count > 0:
+                average_hype = sum_of_hypes / characters_count
+                zone_weight = 1 / average_hype
+            else:
+                average_hype = 0
+                zone_weight = 0
+            hazard_zone_weights[key] = average_hype
+            self.save_message(f"🔥🔥 Hazard zone {key} has {characters_count} characters with an average hype of {average_hype}", channel="debug")
+        
+        # Abort if no character
+        if sum(list(hazard_zone_weights.values())) == 0:
+            return
+        
+        # Define hazard zone
+        hazard_zone = random.choices(list(hazard_zone_weights.keys()), list(hazard_zone_weights.values()))[0]
+        
+        # Get all characters in the specific hazard zone
+        characters_in_hazard_zone = characters_in_hazard_zones[hazard_zone]
+        
+        for character in characters_in_hazard_zone:
+            self.save_message("🔥🔥 A deadly event is occuring", channel=character.name)
+        self.save_message(f"🔥🔥 Deadly zone is occuring {hazard_zone}", channel="debug")
+        self.save_message(f"🔥🔥 {len(characters_in_hazard_zone)} trapped characters: {', '.join([c.name for c in characters_in_hazard_zone])}", channel="debug")
+
+        # Each character moves in a random direction (TODO: the character can chose)
+        for character in characters_in_hazard_zone:
+            potential_directions = []
+            if character.position[0] > -TERRAIN_RADIUS:
+                potential_directions.append("go west")
+            if character.position[0] < TERRAIN_RADIUS:
+                potential_directions.append("go east")
+            if character.position[1] > -TERRAIN_RADIUS:
+                potential_directions.append("go south")
+            if character.position[1] < TERRAIN_RADIUS:
+                potential_directions.append("go north")
+            direction = random.choice(potential_directions)
+            character.move(direction)
+
+        # Kill characters that are still in the hazard zone
+        for character in characters_in_hazard_zone:
+            if character.position in hazard_cells[hazard_zone]:
+                character.alive = False
+                character.statistics["cause_of_death"] = "hazard"
+                self.save_message(f"💀🔥 You did not manage to escape the danger", channel=character.name)
+                self.save_message(f"💀💀 {character.name} died", channel="public", anti_channels=[character.name])
+                self.save_message(f"💀🔥 {character.name} did not manage to escape the danger", channel="debug")
+            else:
+                if random_bool(1-EVENT_FLEE_PROBABILITY):
+                    character.alive = False
+                    character.statistics["cause_of_death"] = "hazard"
+                    self.save_message(f"💀🔥 You stumbled trying to escape the danger", channel=character.name)
+                    self.save_message(f"💀💀 {character.name} died", channel="public", anti_channels=[character.name])
+                    self.save_message(f"💀🔥 {character.name} stumbled trying to escape the danger.", channel="debug")
+                else:
+                    self.save_message(f"🔥✅ You barely escaped the hazard zone", channel=character.name)
+                    self.save_message(f"🔥✅ {character.name} barely escaped the hazard zone", channel="debug")
+    
+    
     def __show_time_and_day(self) -> str:
 
         if self.phase == "move":
@@ -409,74 +499,3 @@ class Game:
         self.save_message(f"💀💀 Remaining tributes:", channel="debug", emphasis=True)
         for character in self.get_alive_characters():
             self.save_message(f"- {character.name}", channel="debug")
-
-
-    def __resolve_random_event(self):
-        """
-        During the game, events can happen. Half of the terrain will be
-        dangerous at night, and characters randomly move. The ones who do not
-        move out of the dangerous zone will be killed.
-        """
-
-
-        # Get all possible hazard zones
-        cells = list(itertools.product(range(-TERRAIN_RADIUS, TERRAIN_RADIUS + 1), repeat=2))
-        hazard_cells = {}
-        hazard_cells["north"] = [c for c in cells if c[1] > 0]
-        hazard_cells["south"] = [c for c in cells if c[1] < 0]
-        hazard_cells["east"] = [c for c in cells if c[0] < 0]
-        hazard_cells["west"] = [c for c in cells if c[0] > 0]
-        
-        hazard_zone_weights = {}
-        characters_in_hazard_zones = {}
-        for key, element in hazard_cells.items():
-            characters_in_hazard_zones[key] = [c for c in self.__characters if c.alive and c.position in element]
-            hazard_zone_weights[key] = len(characters_in_hazard_zones[key])
-        
-        # Abort if no character
-        if sum(list(hazard_zone_weights.values())) == 0:
-            return
-        
-        # Define hazard zone
-        hazard_zone = random.choices(list(hazard_zone_weights.keys()), list(hazard_zone_weights.values()))[0]
-        
-        # Get all characters in the specific hazard zone
-        characters_in_hazard_zone = characters_in_hazard_zones[hazard_zone]
-        
-        for character in characters_in_hazard_zone:
-            self.save_message("🔥🔥 A deadly event is occuring", channel=character.name)
-        self.save_message(f"🔥🔥 Deadly zone is occuring {hazard_zone}", channel="debug")
-        self.save_message(f"🔥🔥 {len(characters_in_hazard_zone)} trapped characters: {', '.join([c.name for c in characters_in_hazard_zone])}", channel="debug")
-
-        # Each character moves in a random direction (TODO: the character can chose)
-        for character in characters_in_hazard_zone:
-            potential_directions = []
-            if character.position[0] > -TERRAIN_RADIUS:
-                potential_directions.append("go west")
-            if character.position[0] < TERRAIN_RADIUS:
-                potential_directions.append("go east")
-            if character.position[1] > -TERRAIN_RADIUS:
-                potential_directions.append("go south")
-            if character.position[1] < TERRAIN_RADIUS:
-                potential_directions.append("go north")
-            direction = random.choice(potential_directions)
-            character.move(direction)
-
-        # Kill characters that are still in the hazard zone
-        for character in characters_in_hazard_zone:
-            if character.position in hazard_cells[hazard_zone]:
-                character.alive = False
-                character.statistics["cause_of_death"] = "hazard"
-                self.save_message(f"💀🔥 You did not manage to escape the danger", channel=character.name)
-                self.save_message(f"💀💀 {character.name} died", channel="public", anti_channels=[character.name])
-                self.save_message(f"💀🔥 {character.name} did not manage to escape the danger", channel="debug")
-            else:
-                if random_bool(1-EVENT_FLEE_PROBABILITY):
-                    character.alive = False
-                    character.statistics["cause_of_death"] = "hazard"
-                    self.save_message(f"💀🔥 You stumbled trying to escape the danger", channel=character.name)
-                    self.save_message(f"💀💀 {character.name} died", channel="public", anti_channels=[character.name])
-                    self.save_message(f"💀🔥 {character.name} stumbled trying to escape the danger.", channel="debug")
-                else:
-                    self.save_message(f"🔥✅ You barely escaped the hazard zone", channel=character.name)
-                    self.save_message(f"🔥✅ {character.name} barely escaped the hazard zone", channel="debug")
