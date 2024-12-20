@@ -355,62 +355,8 @@ class Game:
                 if character.get_action() == "rest" and character in attacks.values() and character.alive:
                     self.save_message(f"🛌🔪 Because of the assault, you couldn't get a wink of sleep", channel=character.name)
                     self.save_message(f"🛌🔪 {character.name} couldn't rest because of the assault", channel="debug")
-
-    def __show_time_and_day(self) -> str:
-
-        if self.phase == "move":
-            prefix = "Start of "
-        else:
-            prefix = ""
-        if self.time == "day":
-            for channel in ["public", "debug"] + [c.name for c in self.__characters]:
-                self.save_message("🌞🌞 {prefix}Day {day}".format(prefix=prefix, day=self.day), channel=channel, emphasis=True)
-        else:
-            for channel in ["public", "debug"] + [c.name for c in self.__characters]:
-                self.save_message("🌙🌙 {prefix}Night {day}".format(prefix=prefix, day=self.day), channel=channel, emphasis=True)
-
-
-    def __pass_time(self):
-        """
-        The game will advance time by one unit and make characters evolve.
-        """
-        # Save message of the time change
-        if len(self.public_messages) == 1:
-            self.save_message("All is calm... too calm...", channel="public")
-        
-
-
-        if self.time == "day":
-            for channel in ["public", "debug"] + [c.name for c in self.__characters]:
-                self.save_message("🌞🌙 The sun sets...", channel=channel, emphasis=True)
-        else:
-            for channel in ["public", "debug"] + [c.name for c in self.__characters]:
-                self.save_message("🌙🌞 The sun rises...", channel=channel, emphasis=True)
-            self.day += 1
-
-        # Make characters evolve
-        for character in self.get_alive_characters():
-            character.evolve(self.time)
-
-        if self.time == "day":
-            self.time = "night"
-        else:
-            self.time = "day"
-
-        # Announce deaths (preivously only happened during the day)
-        new_deaths = [character for character in self.__characters if not character.alive and character not in self.__announced_dead_characters]
-        if len(new_deaths) > 0:
-            self.save_message("💀💀 Deaths of the day:", channel="public", emphasis=True)
-            self.save_message("💀💀 Deaths of the day:", channel="debug", emphasis=True)
-            for character in new_deaths:
-                self.save_message(f"- {character.name}", channel="public")
-                self.save_message(f"- {character.name}", channel="debug")
-                self.__announced_dead_characters.append(character)
-        self.save_message(f"💀💀 Remaining tributes:", channel="debug", emphasis=True)
-        for character in self.get_alive_characters():
-            self.save_message(f"- {character.name}", channel="debug")
-
-
+    
+    
     def __resolve_random_event(self):
         """
         During the game, events can happen. Half of the terrain will be
@@ -480,3 +426,58 @@ class Game:
                 else:
                     self.save_message(f"🔥✅ You barely escaped the hazard zone", channel=character.name)
                     self.save_message(f"🔥✅ {character.name} barely escaped the hazard zone", channel="debug")
+    
+    
+    def __show_time_and_day(self) -> str:
+
+        if self.phase == "move":
+            prefix = "Start of "
+        else:
+            prefix = ""
+        if self.time == "day":
+            for channel in ["public", "debug"] + [c.name for c in self.__characters]:
+                self.save_message("🌞🌞 {prefix}Day {day}".format(prefix=prefix, day=self.day), channel=channel, emphasis=True)
+        else:
+            for channel in ["public", "debug"] + [c.name for c in self.__characters]:
+                self.save_message("🌙🌙 {prefix}Night {day}".format(prefix=prefix, day=self.day), channel=channel, emphasis=True)
+
+
+    def __pass_time(self):
+        """
+        The game will advance time by one unit and make characters evolve.
+        """
+        # Save message of the time change
+        if len(self.public_messages) == 1:
+            self.save_message("All is calm... too calm...", channel="public")
+        
+
+
+        if self.time == "day":
+            for channel in ["public", "debug"] + [c.name for c in self.__characters]:
+                self.save_message("🌞🌙 The sun sets...", channel=channel, emphasis=True)
+        else:
+            for channel in ["public", "debug"] + [c.name for c in self.__characters]:
+                self.save_message("🌙🌞 The sun rises...", channel=channel, emphasis=True)
+            self.day += 1
+
+        # Make characters evolve
+        for character in self.get_alive_characters():
+            character.evolve(self.time)
+
+        if self.time == "day":
+            self.time = "night"
+        else:
+            self.time = "day"
+
+        # Announce deaths (preivously only happened during the day)
+        new_deaths = [character for character in self.__characters if not character.alive and character not in self.__announced_dead_characters]
+        if len(new_deaths) > 0:
+            self.save_message("💀💀 Deaths of the day:", channel="public", emphasis=True)
+            self.save_message("💀💀 Deaths of the day:", channel="debug", emphasis=True)
+            for character in new_deaths:
+                self.save_message(f"- {character.name}", channel="public")
+                self.save_message(f"- {character.name}", channel="debug")
+                self.__announced_dead_characters.append(character)
+        self.save_message(f"💀💀 Remaining tributes:", channel="debug", emphasis=True)
+        for character in self.get_alive_characters():
+            self.save_message(f"- {character.name}", channel="debug")
