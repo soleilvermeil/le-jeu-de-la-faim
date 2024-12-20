@@ -217,117 +217,12 @@ class Agent:
                 return random.choices(
                     ["hunt", "gather", "rest", "hide"],
                     weights=[
-                        1 * map_range(hostility, 0, 1, 0, 1),
-                        1 * map_range(resilience, 0, 1, 0, 1) * max(map_range(hunger, 0, game.constants.MAX_HUNGER, 1, 0), map_range(thirst, 0, game.constants.MAX_THIRST, 1, 0)),
-                        1 * map_range(resilience, 0, 1, 1, 0) * map_range(energy, 0, game.constants.MAX_ENERGY, 1, 0),
-                        1 * map_range(hostility, 0, 1, 1, 0),
+                        1.0 * map_range(hostility, 0, 1, 0, 1),
+                        1.0 * map_range(resilience, 0, 1, 0, 1) * max(map_range(hunger, 0, game.constants.MAX_HUNGER, 1, 0), map_range(thirst, 0, game.constants.MAX_THIRST, 1, 0)),
+                        0.5 * map_range(resilience, 0, 1, 1, 0) * map_range(energy, 0, game.constants.MAX_ENERGY, 1, 0),
+                        0.5 * map_range(hostility - resilience, -1, 1, 1, 0),
                     ]
                 )[0]
-
-            # # Get the current state of the character
-            # character_state = self.current_state["characters"][self.name]["state"]
-
-            # # Chose first round's action: the characters that will take the
-            # # risk to run towards the cornucopia are the ones that are more
-            # # hostile and less resilient.
-            # if self.current_state["game"]["state"]["day"] == 0:
-            #     towards_proba = map_range(hostility - resilience, -1, 1, 0, 1)
-            #     if random_bool(towards_proba):
-            #         return "run towards"
-            #     else:
-            #         return "run away"
-            
-            # # Chose movement if phase is "move", check distance and direction
-            # # to the cornucopia, and chose the action accordingly.
-            # if self.current_state["game"]["state"]["phase"] == "move":
-            #     x = character_state["x"]
-            #     y = character_state["y"]
-            #     distance_to_cornucopia = abs(x) + abs(y)
-            #     has_weapon = character_state["bag_weapons_count"] > 0
-            #     if not has_weapon:
-            #         run_away_proba = map_range(hostility, 0, 1, 1, 0)
-            #     else:
-            #         run_away_proba = map_range(hostility, 0, 1, 1, 0.5) # Less likely to stay at the cornucopia if they have a weapon and are hostile
-            #     directions_towards_cornucopia = []
-            #     directions_away_from_cornucopia = []
-            #     if x > 0:
-            #         directions_towards_cornucopia += ["go west"] * abs(x)
-            #         if x < game.constants.TERRAIN_RADIUS:
-            #             directions_away_from_cornucopia += ["go east"]
-            #     if x < 0:
-            #         directions_towards_cornucopia += ["go east"] * abs(x)
-            #         if x > -game.constants.TERRAIN_RADIUS:
-            #             directions_away_from_cornucopia += ["go west"]
-            #     if y > 0:
-            #         directions_towards_cornucopia += ["go south"] * abs(y)
-            #         if y < game.constants.TERRAIN_RADIUS:
-            #             directions_away_from_cornucopia += ["go north"]
-            #     if y < 0:
-            #         directions_towards_cornucopia += ["go north"] * abs(y)
-            #         if y > -game.constants.TERRAIN_RADIUS:
-            #             directions_away_from_cornucopia += ["go south"]
-            #     if not random_bool(run_away_proba):
-            #         if distance_to_cornucopia > 0:
-            #             # If the character has already moved towards the
-            #             # cornucopia, they will continue in a similar
-            #             # direction.
-            #             return random.choice(directions_towards_cornucopia)
-            #         else:
-            #             # If the character is already at the cornucopia, they
-            #             # will stay.
-            #             return "stay"
-            #     else:
-            #         if directions_away_from_cornucopia:
-            #             # If the character has already moved away from the
-            #             # cornucopia, they will continue in a similar
-            #             # direction.
-            #             return random.choice(directions_away_from_cornucopia)
-            #         else:
-            #             # If the character is still at the cornucopia, they
-            #             # will chose a random direction.
-            #             return random.choice(["go north", "go south", "go east", "go west"])
-
-
-            # # Critical behaviour if hungry or thirsty: characters with high
-            # # resilience will care the most about their hunger and thirst.
-            # hunger = character_state["hunger"]
-            # thirst = character_state["thirst"]
-            # hunger_threshold = map_range(resilience, 0, 1, 1, game.constants.MAX_HUNGER - 1)
-            # thirst_threshold = map_range(resilience, 0, 1, 1, game.constants.MAX_THIRST - 1)
-            # if hunger <= hunger_threshold or thirst <= thirst_threshold:
-            #     pass
-            #     # return "gather"
-            
-            # # Critical behaviour if sleepy: characters with low resilience will
-            # # not care about their energy level, while characters with high
-            # # resilience know that resting is dangerous. Thus, only characters
-            # # with medium resilience will rest the most.
-            # energy = character_state["energy"]
-            # energy_threshold = map_range(abs(resilience - 0.5), 0, 0.5, game.constants.MAX_ENERGY, 0)
-            # if energy < energy_threshold and self.current_state["game"]["state"]["time"] == "night":
-            #     return "rest"
-            
-            # # Critical behaviour when at cornucopia: characters with high
-            # # hostility and no weapon gather with high probability. If this
-            # # does not trigger, the usual behaviour is performed.
-            # if character_state["x"] == 0 and character_state["y"] == 0 and character_state["bag_weapons_count"] == 0:
-            #         gather_weapon_proba = map_range(hostility, 0, 1, 0, 1)
-            #         if random_bool(gather_weapon_proba):
-            #             return "gather"
-            
-            # # If at least one opponent spotted, hunt or hide
-            # if character_state["current_spotted_characters"] > 0:
-            #     hunt_proba = map_range(hostility - resilience, -1, 1, 0, 1)
-            #     if random_bool(hunt_proba):
-            #         return "hunt"
-            #     else:
-            #         return "hide"
-                
-            # # Default behaviour if everything is fine
-            # return random.choices(
-            #     ["hunt", "gather"],
-            #     weights=[hostility, resilience]
-            # )[0]
 
         elif self.model == "cmd":
 
@@ -352,7 +247,12 @@ class Agent:
         return self.current_state["characters"][self.name]["state"]["alive"]
             
 
-def main(agents: List[Agent], verbose: bool = False) -> None:
+def main(
+    agents: List[Agent],
+    verbose: bool = False,
+    save_txt: bool = False,
+    save_tsv: bool = False,
+) -> None:
 
     # Create the game object
     game_ = game.Game(character_names=[agent.name for agent in agents])
@@ -419,45 +319,34 @@ def main(agents: List[Agent], verbose: bool = False) -> None:
         print("Game over! Winner is " + smart_join(lst=[c.name for c in game_.get_alive_characters()], sep=", ", last_sep=" and ") + "!")
 
     # Save the game log
-    debug_messages = []
-    for state in state_history:
-        debug_messages.append(messages2str(state["debug"]))
-        debug_messages.append("")
-    os.makedirs("logs", exist_ok=True)
-    with open(os.path.join("logs", f"log_{game_.id}.txt"), "w", encoding="utf8") as f:
-        f.write(messages2str(debug_messages) + "\n")
-
-    # # Save the full state history
-    # data = {}
-    # for state in state_history:
-    #     state_flat = flatten_dict(state, list_transform=messages2str, str_transform=lambda x: x if "\n" not in x else "<str>")
-    #     # state_flat = flatten_dict(state, list_transform=messages2str, str_transform=lambda x: x.replace("\n", ";"))
-    #     if not data:
-    #         for key in state_flat.keys():
-    #             data[key] = [state_flat[key]]
-    #     else:
-    #         for key in state_flat.keys():
-    #             data[key].append(state_flat[key])
-    # df = pd.DataFrame(data)
-    # df.to_csv(os.path.join("logs", f"log_{game_.id}.tsv"), sep="\t", index=False, encoding="utf8")
+    if save_txt:
+        os.makedirs("logs", exist_ok=True)
+        debug_messages = []
+        for state in state_history:
+            debug_messages.append(messages2str(state["debug"]))
+            debug_messages.append("")
+        with open(os.path.join("logs", f"log_{game_.id}.txt"), "w", encoding="utf8") as f:
+            f.write(messages2str(debug_messages) + "\n")
 
     # Save the full state history
-    data = {}
-    for state in state_history:
-        game_state = state["game"]
-        for character in list(state["characters"].keys()):
-            character_state = state["characters"][character]
-            
-            flattened_game_state = flatten_dict({"game": game_state}, list_transform=lambda x: "<list>", str_transform=lambda x: x if "\n" not in x else "<str>")
-            flattened_character_state = flatten_dict({"character": character_state}, list_transform=lambda x: "<list>", str_transform=lambda x: x if "\n" not in x else "<str>")
-            
-            combined_state = {**flattened_game_state, **flattened_character_state}
+    if save_tsv:
+        os.makedirs("logs", exist_ok=True)
+        data = {}
+        for state in state_history:
+            game_state = state["game"]
+            for character in list(state["characters"].keys()):
+                character_state = state["characters"][character]
+                
+                flattened_game_state = flatten_dict({"game": game_state}, list_transform=lambda x: "<list>", str_transform=lambda x: x if "\n" not in x else "<str>")
+                flattened_character_state = flatten_dict({"character": character_state}, list_transform=lambda x: "<list>", str_transform=lambda x: x if "\n" not in x else "<str>")
+                
+                combined_state = {**flattened_game_state, **flattened_character_state}
 
-            if not data:
-                for key in combined_state.keys():
-                    data[key] = [combined_state[key]]
-            else:
-                for key in combined_state.keys():
-                    data[key].append(combined_state[key])
-    df = pd.DataFrame(data)
-    df.to_csv(os.path.join("logs", f"log_{game_.id}.tsv"), sep="\t", index=False, encoding="utf8")
+                if not data:
+                    for key in combined_state.keys():
+                        data[key] = [combined_state[key]]
+                else:
+                    for key in combined_state.keys():
+                        data[key].append(combined_state[key])
+        df = pd.DataFrame(data)
+        df.to_csv(os.path.join("logs", f"log_{game_.id}.tsv"), sep="\t", index=False, encoding="utf8")
