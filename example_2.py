@@ -5,9 +5,9 @@ import random
 if __name__ == '__main__':
 
     # Define numerical values
-    HIGH = 0.9
+    HIGH = 0.8
     UNSPECIFIED = 0.5
-    LOW = 0.1
+    LOW = 0.2
 
     # Define personalities
     PERSONNALITIES = {
