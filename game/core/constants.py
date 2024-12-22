@@ -48,17 +48,32 @@ HYPE_WHEN_GATHERING = 0  # in previous version : 0
 HYPE_WHEN_RESTING = -10  # in previous version : -10
 HYPE_WHEN_HIDING = -30   # in previous version : -30
 TIPS = [
-    "Resources are harder to find at night 😉",
-    "Attacking players is harder at night, but being attacked is also less likely 😉",
-    "You sleep better during night 😉",
-    "Medecine is the only way to recover health 😉",
-    "Sponsors like action and love violence 😉",
-    "You are vulnerable when you gather resources, and even more when you rest 😉",
-    "Maybe you could find some resources while hiding 😉",
-    "Everyone love receiving gifts 😉",
-    "Don't waste food if you are not hungry 😉",
-    "Don't waste water if you are not thirsty 😉",
-    "Sponsor approval is a valuable advantage 😉",
+    # Real tips:
+    "Resources are harder to find at night...",
+    "Attacking players is harder at night, but being attacked is also less likely...",
+    "Not sleeping at night is tiring...",
+    "Medecine is the only way to recover health...",
+    "Sponsors like action and love violence...",
+    "You are vulnerable when you gather resources, and even more when you rest...",
+    "Maybe you could find some resources while hiding...",
+    "Everyone love receiving gifts...",
+    "A single morsel of food is enough to fill you up...",
+    "A single drop of water is enough to quench your thirst...",
+    "Sponsor approval is a valuable advantage...",
+    "Cornucopia is said to be full of weapons...",
+    "If sponsors don't like you, gamemakers will hate you...",
+    # Propaganda:
+    "Remember, only the strong survive; the Games reward those who prove their worth!",
+    "The Capitol gives you a chance to shine; don't waste it, or you'll fade into obscurity.",
+    "Who will rise to be our next victor? Will it be you, or will you let others claim your destiny?",
+    "Fame and fortune await those who dare to fight; make the Capitol proud!",
+    "Don't forget, the Capitol feeds you, trains you, and lets you play your part in history.",
+    "For the glory of the Capitol, may the odds forever be in your favor.",
+    "Victory will bring rewards beyond your wildest dreams—failure will be your last breath.",
+    "The Games are a celebration of loyalty and honor; prove your dedication to the Capitol.",
+    "Every death is a message, every victory a triumph of the Capitol's might.",
+    "Fight for your life, but never forget, the Capitol controls your fate.",
+    "This is your moment; make the Capitol's watchers remember you forever.",
 ]
 PERSONNALITIES = [
     ("ruthless/cold-blooded", "You are trained for combat, aggressive, have a lack of empathy for weaker tributes."),
