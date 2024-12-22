@@ -12,6 +12,7 @@ from .core import game
 from .core import constants
 from .utils import *
 
+
 def messages2str(messages: List[str]) -> str:
     """
     Returns a string representation of a list of messages.
