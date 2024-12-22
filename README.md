@@ -24,6 +24,6 @@ This repository contains a Python-based simulator for the Hunger Games.  It allo
 * **`utils.py`:** Contains utility functions used throughout the project.
 * **`ChatGPT/`:**  (If using ChatGPT) Contains prompt templates and configuration files for interacting with the OpenAI API.
 * **`example_*.py`:** Example scripts demonstrating different usage scenarios, namely
-  * `example_1-.py` is a minimal example, with agents set to have a random behaviour;
-  * `example_2-.py` is an example where agents have each a given `hostility` and `resilience`, giving more unique behaviours;
-  * `example_3-.py` introduces to the use of ChatGPT.
+  * `example_1.py` is a minimal example, with agents set to have a random behaviour;
+  * `example_2.py` is an example where agents have each a given `hostility` and `resilience`, giving more unique behaviours;
+  * `example_3.py` introduces to the use of ChatGPT.
