@@ -61,24 +61,45 @@ class Response(BaseModel):
 
 
 class Agent:
-    def __init__(self, name: str, model: Literal["random", "ChatGPT", "cmd"] | Dict[str, float]):
+    def __init__(self, name: str, model: Literal["random", "personality", "ChatGPT", "cmd"], **kwargs):
+
+        # Save the model and the name
         self.model = model
         self.name = name
         
         if model == "ChatGPT":
-            self.client = OpenAI()
-            system_prompt = open(os.path.join("ChatGPT", "system.txt")).read()
-            system_prompt = system_prompt.strip()
             
-            personnality = random.choice(constants.PERSONNALITIES)
-            system_prompt += "\n\n"
-            system_prompt += f"You are {name}, a tribute in the Hunger Games. You are {personnality[0]}. {personnality[1]}"
-            
+            # Check arguments in kwargs
+            assert "api_key" in kwargs, "API key to OpenAI must be provided."
+            assert "system_prompt" in kwargs, "System prompt must be provided."
+            assert "verbose" in kwargs, "Verbose must be provided."
+            assert isinstance(kwargs["verbose"], bool), "Verbose must be a boolean."
+
+            # Create the client
+            self.client = OpenAI(api_key=kwargs["api_key"])
+
+            # Create the discussion
             self.history = [{
                 "role": "system",
-                "content": system_prompt,
+                "content": kwargs["system_prompt"],
             }]
 
+            # Set verbosity
+            self.verbose = kwargs["verbose"]
+
+        elif model == "personality":
+
+            # Check arguments in kwargs
+            assert "resilience" in kwargs, "Resilience must be provided."
+            assert "hostility" in kwargs, "Hostility must be provided."
+
+            # Check if the values are between 0 and 1
+            for key in ["resilience", "hostility"]:
+                assert 0 <= kwargs[key] <= 1, f"{key} must be between 0 and 1."
+
+            # Save the values
+            self.resilience = kwargs["resilience"]
+            self.hostility = kwargs["hostility"]
 
     def give_state_of_game(self, game_state: str) -> None:
         """
@@ -180,19 +201,11 @@ class Agent:
             # Return
             return response.choices[0].message.parsed.action
         
-        elif isinstance(self.model, dict):
+        elif self.model == "personality":
 
-            # Check if the model has the right keys
-            assert ["resilience", "hostility"] == list(self.model.keys()), "Model must have keys 'resilience' and 'hostility'."
-
-            # Check if the values are between 0 and 1
-            for key in self.model.keys():
-                assert 0 <= self.model[key] <= 1, f"Model's values must be between 0 and 1. {key} is {self.model[key]}."
-
-            # Get the bravery and caution values
-            resilience = self.model["resilience"]
-            hostility = self.model["hostility"]
-
+            # Easy access to the resilience and hostility
+            resilience = self.resilience
+            hostility = self.hostility
 
             if self.current_state["game"]["state"]["day"] == 0:
 
