@@ -164,3 +164,62 @@ def flatten_dict(
             new_dct[key] = str_transform(value)
 
     return new_dct
+
+
+def wrap_text(text, width=50):
+    """
+    Splits the input string into substrings of length <= threshold,
+    ensuring splits occur only at spaces to avoid breaking words.
+
+    Args:
+        text (str): The input string to wrap.
+        threshold (int): The maximum length of each line. Default is 50.
+
+    Returns:
+        str: The wrapped text with substrings joined by newlines.
+    """
+    if width <= 0:
+        raise ValueError("Threshold must be greater than 0.")
+    
+    if "\n" in text:
+        return "\n".join(wrap_text(line, width) for line in text.split("\n"))
+
+    words = text.split()  # Split text into words
+    lines = []
+    current_line = []
+    current_length = 0
+
+    for word in words:
+        word_length = len(word)
+
+        # Check if adding the word exceeds the threshold
+        if current_length + word_length + len(current_line) >= width:
+            lines.append(" ".join(current_line))
+            current_line = []
+            current_length = 0
+
+        current_line.append(word)
+        current_length += word_length
+
+    # Add the last line if it exists
+    if current_line:
+        lines.append(" ".join(current_line))
+
+    return "\n".join(lines)
+
+
+def remove_emojis(text: str) -> str:
+    """
+    Removes emojis from a string.
+    """
+    return text.encode('ascii', 'ignore').decode('ascii')
+
+
+def replace_all(s: str, old_str: str, new_str: str) -> str:
+    """
+    Replaces all occurrences of a substring in a string.
+    """
+    assert old_str not in new_str, "The new string should not contain the old string."
+    while old_str in s:
+        s = s.replace(old_str, new_str)
+    return s
