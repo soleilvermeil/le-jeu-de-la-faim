@@ -2,13 +2,15 @@ from typing import List, Dict, Tuple, Literal
 import datetime
 import random
 import itertools
-from utils import *
+from ..utils import *
 from .constants import *
 from .character import Character
 from .map import Map
 from .weapon import Weapon
 
+
 class Game:
+
     def __init__(self, character_names: List[str]):
 
         self.id = datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")
@@ -30,6 +32,7 @@ class Game:
     def get_alive_characters(self) -> List[Character]:
         return [character for character in self.__characters if character.alive]
     
+
     def get_dead_characters(self) -> List[Character]:
         """
         Get ALL dead characters, including those that have not been announced
@@ -37,6 +40,7 @@ class Game:
         """
         return [character for character in self.__characters if not character.alive]
     
+
     def get_all_characters(self) -> List[Character]:
         return self.__characters
 
@@ -65,7 +69,6 @@ class Game:
         # of a character, and store it if so
         if channel in [c.name for c in self.__characters]:
             self.private_messages[channel].append(message)
-
 
 
     def start_game(self):
@@ -133,11 +136,13 @@ class Game:
         # Return state
         return state
 
+
     def set_action(self, name: str, action: str):
         for character in self.__characters:
             if character.name == name:
                 character.act(action)
                 break
+
 
     def update_game(self):
         
@@ -196,13 +201,12 @@ class Game:
         self.save_message("📝📝 {tip} ".format(tip=random.choice(TIPS)), channel="public", emphasis=True)
 
 
-
-
     def __get_characters_in_cell(self, position: Tuple[int, int]) -> List[Character]:
         characters = [character for character in self.__characters if (character.position == position and character.alive)]
         random.shuffle(characters)
         return characters
     
+
     def __resolve_first_turn(self):
         """
         The first turn of the game will be resolved differently. Characters will
@@ -486,9 +490,6 @@ class Game:
         # Save message of the time change
         if len(self.public_messages) == 1:
             self.save_message("All is calm... too calm...", channel="public")
-        
-
-
         if self.time == "day":
             for channel in ["public", "debug"] + [c.name for c in self.__characters]:
                 self.save_message("🌞🌙 The sun sets...", channel=channel, emphasis=True)

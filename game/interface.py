@@ -1,16 +1,16 @@
-from typing import List, Literal
 import random
 import copy
 import os
 import re
-from openai import OpenAI
-from pydantic import BaseModel, Field
+from typing import List, Literal
 from enum import Enum
-import game
-import game.constants
-from utils import *
-import json # only for logging
-import pandas as pd # only for logging
+from openai import OpenAI              # only for ChatGPT
+from pydantic import BaseModel, Field  # only for ChatGPT
+import json                            # only for logging
+import pandas as pd                    # only for logging
+from .core import game
+from .core import constants
+from .utils import *
 
 
 def messages2str(messages: List[str]) -> str:
@@ -71,7 +71,7 @@ class Agent:
             system_prompt = open(os.path.join("ChatGPT", "system.txt")).read()
             system_prompt = system_prompt.strip()
             
-            personnality = random.choice(game.constants.PERSONNALITIES)
+            personnality = random.choice(constants.PERSONNALITIES)
             system_prompt += "\n\n"
             system_prompt += f"You are {name}, a tribute in the Hunger Games. You are {personnality[0]}. {personnality[1]}"
             
@@ -121,13 +121,13 @@ class Agent:
             # Critical behaviour if hungry or thirsty
             hunger = self.current_state["characters"][self.name]["state"]["hunger"]
             thirst = self.current_state["characters"][self.name]["state"]["thirst"]
-            if random_bool(1 - ((hunger - 1) // game.constants.MAX_HUNGER)) or random_bool(1 - ((thirst - 1) // game.constants.MAX_THIRST)):
+            if random_bool(1 - ((hunger - 1) // constants.MAX_HUNGER)) or random_bool(1 - ((thirst - 1) // constants.MAX_THIRST)):
                 return "gather"
 
             # Critical behaviour if sleepy
             energy = self.current_state["characters"][self.name]["state"]["energy"]
             mental = self.current_state["characters"][self.name]["state"]["mental"]
-            if self.current_state["game"]["state"]["time"] == "night" and random_bool(1 - ((energy - 1) // game.constants.MAX_ENERGY)):
+            if self.current_state["game"]["state"]["time"] == "night" and random_bool(1 - ((energy - 1) // constants.MAX_ENERGY)):
                 return "rest"
             
             # If at least one opponent spotted, hunt or hide
@@ -196,6 +196,9 @@ class Agent:
 
 
             if self.current_state["game"]["state"]["day"] == 0:
+
+                # Characters are more likely to run towards the cornucopia if
+                # they are more hostile and less resilient
                 return random.choices(
                     ["run towards", "run away"],
                     weights=[
@@ -203,23 +206,55 @@ class Agent:
                         map_range(hostility - resilience, -1, 1, 1, 0)
                     ]
                 )[0]
+            
             elif self.current_state["game"]["state"]["phase"] == "move":
-                return random.choices(
-                    [random.choice(["go north", "go south", "go east", "go west"])] + ["stay"],
-                    weights=[
-                        map_range(hostility - resilience, -1, 1, 1, 0),
-                        map_range(hostility - resilience, -1, 1, 0, 1)]
-                )[0]
+
+                # Get the current position of the character
+                x = self.current_state["characters"][self.name]["state"]["x"]
+                y = self.current_state["characters"][self.name]["state"]["y"]
+
+                # Get actions that move towards or away from the cornucopia
+                current_distance_to_cornucopia = abs(x) + abs(y)
+                directions_towards_cornucopia = []
+                directions_away_from_cornucopia = []
+                for (dx, dy, action) in [(0, 1, "go north"), (0, -1, "go south"), (1, 0, "go east"), (-1, 0, "go west")]:
+                    new_distance_to_cornucopia = abs(x + dx) + abs(y + dy)
+                    if new_distance_to_cornucopia < current_distance_to_cornucopia:
+                        directions_towards_cornucopia.append(action)
+                    elif new_distance_to_cornucopia > current_distance_to_cornucopia:
+                        directions_away_from_cornucopia.append(action)
+
+                # If no direction allows to move closer or further from the
+                # cornucopia, also consider staying in place
+                if not directions_towards_cornucopia:
+                    directions_towards_cornucopia = ["stay"]
+                if not directions_away_from_cornucopia:
+                    directions_away_from_cornucopia = ["stay"]
+
+                # Characters are more likely to move towards the cornucopia if
+                # they are more hostile and less resilient
+                return random.choices([
+                    random.choice(directions_away_from_cornucopia),
+                    random.choice(directions_towards_cornucopia),
+                ], weights=[
+                    map_range(hostility - resilience, -1, 1, 1, 0),
+                    map_range(hostility - resilience, -1, 1, 0, 1)
+                ])[0]
+            
             else:
+
+                # Get the current state of the character
                 hunger = self.current_state["characters"][self.name]["state"]["hunger"]
                 thirst = self.current_state["characters"][self.name]["state"]["thirst"]
                 energy = self.current_state["characters"][self.name]["state"]["energy"]
+
+                # Chose actiopn
                 return random.choices(
                     ["hunt", "gather", "rest", "hide"],
                     weights=[
                         1.0 * map_range(hostility, 0, 1, 0, 1),
-                        1.0 * map_range(resilience, 0, 1, 0, 1) * max(map_range(hunger, 0, game.constants.MAX_HUNGER, 1, 0), map_range(thirst, 0, game.constants.MAX_THIRST, 1, 0)),
-                        0.5 * map_range(resilience, 0, 1, 1, 0) * map_range(energy, 0, game.constants.MAX_ENERGY, 1, 0),
+                        1.0 * map_range(resilience, 0, 1, 0, 1) * max(map_range(hunger, 0, constants.MAX_HUNGER, 1, 0), map_range(thirst, 0, constants.MAX_THIRST, 1, 0)),
+                        0.5 * map_range(resilience, 0, 1, 1, 0) * map_range(energy, 0, constants.MAX_ENERGY, 1, 0),
                         0.5 * map_range(hostility - resilience, -1, 1, 1, 0),
                     ]
                 )[0]
@@ -274,9 +309,9 @@ def main(
         
         # Print the public messages
         if verbose:
-            print(str2border("PUBLIC BEGIN"))
-            print(messages2str(state["game"]["public_messages"]))
-            print(str2border("PUBLIC END"))
+            print(str2border(""))
+            print(messages2str(state["debug"]))
+            print(str2border(""))
             
         # Send to all agents the state of the game
         for agent in agents:
@@ -289,10 +324,10 @@ def main(
             agent.give_state_of_game(state)
 
             # Print the private messages
-            if verbose:
-                print(str2border(f"{agent.name}'s turn BEGIN"))
-                print(messages2str(state["characters"][agent.name]["private_messages"]))
-                print(str2border(f"{agent.name}'s turn END"))
+            # if verbose:
+            #     print(str2border(f"{agent.name}'s turn BEGIN"))
+            #     print(messages2str(state["characters"][agent.name]["private_messages"]))
+            #     print(str2border(f"{agent.name}'s turn END"))
 
         # If only a single character is left, exit the loop
         if len(state["game"]["state"]["alive_characters"]) == 1:
