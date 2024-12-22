@@ -54,7 +54,14 @@ if __name__ == '__main__':
     for personnality in PERSONNALITIES:
         for i in range(AGENTS_PER_PERSONNALITY):
             name = f"{personnality}_{i}"
-            agents.append(Agent(name=name, model=PERSONNALITIES[personnality]))
+            agents.append(
+                Agent(
+                    name=name,
+                    model="personality",
+                    resilience=PERSONNALITIES[personnality]["resilience"],
+                    hostility=PERSONNALITIES[personnality]["hostility"],
+                )
+            )
 
     # Delete the logs folder
     try:

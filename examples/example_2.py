@@ -82,7 +82,12 @@ if __name__ == '__main__':
 
     # Create agents    
     agents = [
-        Agent(name=name, model=PERSONNALITIES[model])
+        Agent(
+            name=name,
+            model="personality",
+            resilience=PERSONNALITIES[model]["resilience"],
+            hostility=PERSONNALITIES[model]["hostility"],
+        )
         for name, model in personnalities.items()
     ]
 
