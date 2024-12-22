@@ -1,5 +1,8 @@
-from interface import Agent, main
 import random
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from game.interface import Agent, main
 
 
 if __name__ == '__main__':
