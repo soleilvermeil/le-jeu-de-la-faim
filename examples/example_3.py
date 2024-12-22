@@ -1,9 +1,5 @@
-import random
-import shutil
-try:
-    from tqdm import tqdm
-except ImportError:
-    tqdm = lambda x: x
+from textwrap import dedent
+import dotenv
 
 
 import sys
@@ -13,62 +9,73 @@ from game.interface import Agent, main
 
 
 if __name__ == '__main__':
-
-    # Define numerical values
-    HIGH = 0.8
-    UNSPECIFIED = 0.5
-    LOW = 0.2
-
-    # Define personalities
-    PERSONNALITIES = {
-        "ruthless/cold-blooded": {
-            "resilience": UNSPECIFIED,
-            "hostility": HIGH,
-        },
-        "strategic/cunning": {
-            "resilience": HIGH,
-            "hostility": UNSPECIFIED,
-        },
-        "noble/heroic": {
-            "resilience": UNSPECIFIED,
-            "hostility": LOW,
-        },
-        "terrified/timid": {
-            "resilience": HIGH,
-            "hostility": LOW,
-        },
-        "manipulative/charismatic": {
-            "resilience": UNSPECIFIED,
-            "hostility": UNSPECIFIED,
-        },
-        "unhinged/vengeful": {
-            "resilience": HIGH,
-            "hostility": HIGH,
-        }
-    }
     
-    AGENTS_PER_PERSONNALITY = 4
+    # Get API key from OpenAI
+    dotenv.load_dotenv()
+    API_KEY = os.environ.get("OPENAI_API_KEY")
+    print(API_KEY)
 
-    # Define agents
-    agents = []
-    for personnality in PERSONNALITIES:
-        for i in range(AGENTS_PER_PERSONNALITY):
-            name = f"{personnality}_{i}"
-            agents.append(
-                Agent(
-                    name=name,
-                    model="personality",
-                    resilience=PERSONNALITIES[personnality]["resilience"],
-                    hostility=PERSONNALITIES[personnality]["hostility"],
-                )
-            )
+    # Get a system prompt:
+    katniss_system_prompt = dedent("""
+        You are Katniss Everdeen, a character from the Hunger Games.
+        You are in the arena, and you have to survive.
+        While you are confident in your abilities, you are also aware that you are not invincible.
+        You have to be strategic and cunning to survive.
+        Once the game starts, you should probably flee the Cornucopia.
+    """).replace("\n", " ").strip()
 
-    # Delete the logs folder
-    try:
-        shutil.rmtree("logs", ignore_errors=True)
-    except OSError:
-        pass
+    cato_system_prompt = dedent("""
+        You are Cato, a character from the Hunger Games.
+        You are a Career tribute, trained from a young age to excel in the Games.
+        You are strong, confident, and fiercely competitive, but your arrogance can sometimes cloud your judgment.
+        In the arena, you rely on your brute strength and combat skills, though you should also remain wary of unexpected threats.
+        Your primary goal is to dominate your opponents and secure victory, but remember, even the strongest can fall if they let their guard down.
+        Stay vigilant, and use your training wisely.
+    """).replace("\n", " ").strip()
 
-    # Run the game
-    for i in tqdm(range(1000)):
-        main(agents, save_tsv=True)
+    foxface_system_prompt = dedent("""
+        You are Foxface, a character from the Hunger Games.
+        You are highly intelligent, quick-witted, and stealthy, relying on your agility and cunning rather than brute strength.
+        In the arena, you are not one to engage in direct combat, but you are an expert in scavenging and navigating the environment with ease.
+        You use your intellect to avoid danger, carefully observing your surroundings and the actions of other tributes.
+        You know that survival depends on being unnoticed and outsmarting your opponents.
+        Trust your sharp mind and instincts to stay one step ahead, and use subtlety to your advantage.
+    """).replace("\n", " ").strip()
+
+
+
+
+
+    agents = [
+        Agent("Katniss", "ChatGPT", api_key=API_KEY, system_prompt=katniss_system_prompt, verbose=True),
+        Agent("Cato", "ChatGPT", api_key=API_KEY, system_prompt=cato_system_prompt, verbose=True),
+        Agent("Foxface", "ChatGPT", api_key=API_KEY, system_prompt=foxface_system_prompt, verbose=True),
+        Agent("Alpha", "random"),
+        Agent("Bravo", "random"),
+        Agent("Charlie", "random"),
+        Agent("Delta", "random"),
+        Agent("Echo", "random"),
+        Agent("Foxtrot", "random"),
+        Agent("Golf", "random"),
+        Agent("Hotel", "random"),
+        Agent("India", "random"),
+        Agent("Juliet", "random"),
+        Agent("Kilo", "random"),
+        Agent("Lima", "random"),
+        Agent("Mike", "random"),
+        Agent("November", "random"),
+        Agent("Oscar", "random"),
+        Agent("Papa", "random"),
+        Agent("Quebec", "random"),
+        Agent("Romeo", "random"),
+        Agent("Sierra", "random"),
+        Agent("Tango", "random"),
+        Agent("Uniform", "random"),
+        Agent("Victor", "random"),
+        Agent("Whiskey", "random"),
+        Agent("Xray", "random"),
+        Agent("Yankee", "random"),
+        Agent("Zulu", "random"),
+    ]
+    
+    main(agents, save_txt=True)
