@@ -64,7 +64,6 @@ class Agent:
     def __init__(self, name: str, model: Literal["random", "ChatGPT", "cmd"] | Dict[str, float]):
         self.model = model
         self.name = name
-        self.dna = [random.random() for _ in range(100)]
         
         if model == "ChatGPT":
             self.client = OpenAI()
