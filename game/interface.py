@@ -6,11 +6,24 @@ from typing import List, Literal
 from enum import Enum
 from openai import OpenAI              # only for ChatGPT
 from pydantic import BaseModel, Field  # only for ChatGPT
-import json                            # only for logging
+import yaml                            # only for ChatGPT logging
+import json                            # only for ChatGPT logging
 import pandas as pd                    # only for logging
 from .core import game
 from .core import constants
 from .utils import *
+
+
+# Custom YAML dumper to handle multiline strings
+class LiteralDumper(yaml.SafeDumper):
+    pass
+def str_presenter(dumper, data):
+    data = wrap_text(data, width=80)
+    if '\n' in data:
+        data = replace_all(data, ' \n', '\n')
+        return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
+    return dumper.represent_scalar('tag:yaml.org,2002:str', data)
+LiteralDumper.add_representer(str, str_presenter)
 
 
 def messages2str(messages: List[str]) -> str:
@@ -30,11 +43,11 @@ def messages2str(messages: List[str]) -> str:
     return messages
 
 
-def str2border(s: str, total_length: int = 50) -> str:
+def str2border(s: str, total_length: int = 80) -> str:
     """
     Returns a string with a border around it.
     """
-    return f"{s:-<{total_length}}"
+    return f"{s:-<{total_length-1}}"
 
 
 class Action(str, Enum):
@@ -54,9 +67,9 @@ class Action(str, Enum):
 class Response(BaseModel):
     # personal_situation_analysis: str = Field(description="The character's analysis of their personal situation, notably on their immediate needs.")
     # world_situation_analysis: str = Field(description="The character's analysis of the overall game, notably on their opponents.")
-    # thoughts: str = Field(description="The character's reflections or inner dialogue, providing insight into their thinking process, based on their personality.")
-    story: str = Field(description="The story or narrative that the character is experiencing, from a first-person perspective.")
-    story_fr: str = Field(description="French translation of the field 'story'.")
+    thoughts: str = Field(description="The character's reflections or inner dialogue, providing insight into their thinking process, based on their personality.")
+    # story: str = Field(description="The story or narrative that the character is experiencing, from a first-person perspective. Should not exceed one paragraph.")
+    # story_fr: str = Field(description="French translation of the field 'story'.")
     action: Action = Field(description="The action being taken.")
 
 
@@ -79,10 +92,13 @@ class Agent:
             self.client = OpenAI(api_key=kwargs["api_key"])
 
             # Create the discussion
-            self.history = [{
+            self.discussion = [{
                 "role": "system",
                 "content": kwargs["system_prompt"],
             }]
+
+            # Create the parsed response history
+            self.parsed_response_history = []
 
             # Set verbosity
             self.verbose = kwargs["verbose"]
@@ -117,12 +133,7 @@ class Agent:
 
         # Get the possible actions
         full_message = messages2str(self.current_state["characters"][self.name]["private_messages"])
-
-        # Start by getting the text in parentheses
-        possible_actions_bulk = re.findall(r"\((.*?)\)", full_message)[-1]
-        
-        # Split by `, `
-        possible_actions = possible_actions_bulk.split(", ")
+        possible_actions = re.findall(r"\((.*?)\)", full_message)[-1].split(", ")
 
         if self.model == "random":
 
@@ -160,43 +171,60 @@ class Agent:
         elif self.model == "ChatGPT":
             
             # Build message to send
-            message_to_send = (
-                str2border("Public POV (begin)") + "\n" + messages2str(self.current_state["game"]["public_messages"]) + "\n" + str2border("Public POV (end)") + "\n" + 
-                str2border("Private POV (begin)") + "\n" + messages2str(self.current_state["characters"][self.name]["private_messages"]) + "\n" + str2border("Private POV (end)") + "\n"
-            )
+            new_user_message = "\n".join([
+                str2border("Public POV (begin)"),
+                messages2str(self.current_state["game"]["public_messages"]),
+                str2border("Public POV (end)"),
+                str2border("Private POV (begin)"),
+                messages2str(self.current_state["characters"][self.name]["private_messages"]),
+                str2border("Private POV (end)"),
+            ])
 
-            final_message_to_send = {
+            payload_to_send = {
                 "role": "user",
-                "content": message_to_send
+                "content": new_user_message
             }
-            whole_conversation = self.history + [final_message_to_send]
+            whole_conversation = self.discussion + [payload_to_send]
             
             # Send the current state to the model
             response = self.client.beta.chat.completions.parse(
                 model="gpt-4o-mini",
                 messages=whole_conversation,
-                # response_format={
-                #     "type": "json_schema",
-                #     "json_schema": self.schema
-                # }
                 response_format=Response,
             )
             
             # Update the history
-            self.history.append(final_message_to_send)
-            self.history.append({
+            self.discussion.append(payload_to_send)
+            self.discussion.append({
                 "role": "assistant",
                 "content": response.choices[0].message.content
             })
+            self.parsed_response_history.append(response.choices[0].message.parsed)
             
-            # Write the response to a file
-            os.makedirs("logs", exist_ok=True)
-            with open(os.path.join("logs", f"log_{self.current_state['game']['id']}_{self.name}.txt"), "w", encoding="utf8") as f:
-                for i, h in enumerate(self.history):
-                    if i > 0:
-                        f.write("-" * 50 + "\n")
-                    f.write(h["role"] + "\n")
-                    f.write(h["content"] + "\n")
+            # Format everything and write it to a file
+            if self.verbose:
+
+                # Prepare data
+                data = {
+                    "system_prompt": self.discussion[0]["content"],
+                    "discussion": [],
+                }
+
+                for i, d in enumerate(self.discussion):
+                    role = d["role"]
+                    if role == "user":
+                        content = d["content"]
+                        data["discussion"].append({"role": role, "content": content})
+                    elif role == "assistant":
+                        parsed = self.parsed_response_history[(i - 1) // 2]  # TODO: make this more robust
+                        data["discussion"].append({"role": role} | json.loads(parsed.json()))
+
+                # Write to file
+                os.makedirs("logs", exist_ok=True)
+                # with open(os.path.join("logs", f"log_{self.current_state['game']['id']}_{self.name}.json"), "w", encoding="utf8") as f:
+                #     json.dump(data, f, indent=4, ensure_ascii=False)
+                with open(os.path.join("logs", f"log_{self.current_state['game']['id']}_{self.name}.yaml"), "w", encoding="utf8") as f:
+                    yaml.dump(data, Dumper=LiteralDumper, default_flow_style=False, allow_unicode=True, stream=f, sort_keys=False)
             
             # Return
             return response.choices[0].message.parsed.action
