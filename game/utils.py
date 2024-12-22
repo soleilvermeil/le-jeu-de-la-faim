@@ -47,7 +47,6 @@ def coords(x: int | tuple, y: int = None) -> str:
     return f"({n:+}°N {w:+}°W)"
 
 
-
 def unique(lst: list) -> list:
     """
     Return a list with unique elements.
@@ -142,6 +141,7 @@ def flatten_dict(
     }
     ```
     """
+
 
     def _flatten(d, parent_key=""):
         items = []

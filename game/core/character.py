@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING, Dict, List, Literal, Tuple
-from utils import *
+from ..utils import *
 from .constants import *
 from .bag import Bag
 from .weapon import Weapon

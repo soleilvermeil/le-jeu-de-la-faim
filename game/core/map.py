@@ -6,6 +6,7 @@ from .cell import Cell
 
 
 class Map:
+
     def __init__(self, radius: int):
         forest = Cell("in|a forest", icon="🌳")
         lake = Cell("at|a lake", icon="💦", water_multiplier=3)
@@ -18,6 +19,7 @@ class Map:
             for x, y in itertools.product(range(-radius, radius+1), range(-radius, radius+1)) if (x, y) != (0, 0)
         }
         self.cells[(0, 0)] = cornucopia
+
 
     def draw(self, discovered_cells, current_position: Tuple[int, int], inner_cell_width: int = 3) -> str:
         

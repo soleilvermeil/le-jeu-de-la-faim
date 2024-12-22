@@ -1,17 +1,16 @@
-from typing import List, Literal
 import random
 import copy
 import os
 import re
-from openai import OpenAI
-from pydantic import BaseModel, Field
+from typing import List, Literal
 from enum import Enum
-import game
-import game.constants
-from utils import *
-import json # only for logging
-import pandas as pd # only for logging
-
+from openai import OpenAI              # only for ChatGPT
+from pydantic import BaseModel, Field  # only for ChatGPT
+import json                            # only for logging
+import pandas as pd                    # only for logging
+from .core import game
+from .core import constants
+from .utils import *
 
 def messages2str(messages: List[str]) -> str:
     """
@@ -71,7 +70,7 @@ class Agent:
             system_prompt = open(os.path.join("ChatGPT", "system.txt")).read()
             system_prompt = system_prompt.strip()
             
-            personnality = random.choice(game.constants.PERSONNALITIES)
+            personnality = random.choice(constants.PERSONNALITIES)
             system_prompt += "\n\n"
             system_prompt += f"You are {name}, a tribute in the Hunger Games. You are {personnality[0]}. {personnality[1]}"
             
@@ -121,13 +120,13 @@ class Agent:
             # Critical behaviour if hungry or thirsty
             hunger = self.current_state["characters"][self.name]["state"]["hunger"]
             thirst = self.current_state["characters"][self.name]["state"]["thirst"]
-            if random_bool(1 - ((hunger - 1) // game.constants.MAX_HUNGER)) or random_bool(1 - ((thirst - 1) // game.constants.MAX_THIRST)):
+            if random_bool(1 - ((hunger - 1) // constants.MAX_HUNGER)) or random_bool(1 - ((thirst - 1) // constants.MAX_THIRST)):
                 return "gather"
 
             # Critical behaviour if sleepy
             energy = self.current_state["characters"][self.name]["state"]["energy"]
             mental = self.current_state["characters"][self.name]["state"]["mental"]
-            if self.current_state["game"]["state"]["time"] == "night" and random_bool(1 - ((energy - 1) // game.constants.MAX_ENERGY)):
+            if self.current_state["game"]["state"]["time"] == "night" and random_bool(1 - ((energy - 1) // constants.MAX_ENERGY)):
                 return "rest"
             
             # If at least one opponent spotted, hunt or hide
@@ -218,8 +217,8 @@ class Agent:
                     ["hunt", "gather", "rest", "hide"],
                     weights=[
                         1.0 * map_range(hostility, 0, 1, 0, 1),
-                        1.0 * map_range(resilience, 0, 1, 0, 1) * max(map_range(hunger, 0, game.constants.MAX_HUNGER, 1, 0), map_range(thirst, 0, game.constants.MAX_THIRST, 1, 0)),
-                        0.5 * map_range(resilience, 0, 1, 1, 0) * map_range(energy, 0, game.constants.MAX_ENERGY, 1, 0),
+                        1.0 * map_range(resilience, 0, 1, 0, 1) * max(map_range(hunger, 0, constants.MAX_HUNGER, 1, 0), map_range(thirst, 0, constants.MAX_THIRST, 1, 0)),
+                        0.5 * map_range(resilience, 0, 1, 1, 0) * map_range(energy, 0, constants.MAX_ENERGY, 1, 0),
                         0.5 * map_range(hostility - resilience, -1, 1, 1, 0),
                     ]
                 )[0]
