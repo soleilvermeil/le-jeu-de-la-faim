@@ -335,6 +335,76 @@ class Agent:
 
             # This should never happen
             pass
+
+    def inform_death(self) -> None:
+
+        if self.model == "random":
+
+            pass
+
+        elif self.model == "ChatGPT":
+
+            # Build message to send
+            new_user_message = "\n".join([
+                str2border("Public POV (begin)"),
+                messages2str(self.current_state["game"]["public_messages"]),
+                str2border("Public POV (end)"),
+                str2border("Private POV (begin)"),
+                messages2str(self.current_state["characters"][self.name]["private_messages"]),
+                str2border("Private POV (end)"),
+                f"You are dead {self.name}. Shall your name forever be forgotten."
+            ])
+
+            # Building a (fake) payload
+            death_payload = {
+                "role": "user",
+                "content": new_user_message
+            }
+                        
+            # Update the history (only the user message)
+            self.discussion.append(death_payload)
+            
+            # Format everything and write it to a file
+            if self.verbose:
+
+                # Prepare data
+                data = {
+                    "system_prompt": self.discussion[0]["content"],
+                    "discussion": [],
+                }
+
+                for i, d in enumerate(self.discussion):
+                    role = d["role"]
+                    if role == "user":
+                        content = d["content"]
+                        data["discussion"].append({"role": role, "content": content})
+                    elif role == "assistant":
+                        parsed = self.parsed_response_history[(i - 1) // 2]  # TODO: make this more robust
+                        data["discussion"].append({"role": role} | json.loads(parsed.json()))
+
+                # Write to file
+                os.makedirs("logs", exist_ok=True)
+                # with open(os.path.join("logs", f"log_{self.current_state['game']['id']}_{self.name}.json"), "w", encoding="utf8") as f:
+                #     json.dump(data, f, indent=4, ensure_ascii=False)
+                with open(os.path.join("logs", f"log_{self.current_state['game']['id']}_{self.name}.yaml"), "w", encoding="utf8") as f:
+                    yaml.dump(data, Dumper=LiteralDumper, default_flow_style=False, allow_unicode=True, stream=f, sort_keys=False)
+
+        elif self.model == "personality":
+
+            pass
+
+        elif self.model == "cmd":
+
+            # Print to console the private message
+            print(str2border("Public POV (begin)"))
+            print(messages2str(self.current_state["game"]["public_messages"]))
+            print(str2border("Public POV (end)"))
+            print(str2border("Private POV (begin)"))
+            print(messages2str(self.current_state["characters"][self.name]["private_messages"]))
+            print(str2border("Private POV (end"))
+
+            # Print the death message
+            print(f"You are dead, {self.name}. Shall your name forever be forgotten.")
             
     def is_alive(self) -> bool:
         return self.current_state["characters"][self.name]["state"]["alive"]
@@ -394,12 +464,15 @@ def main(
         # Ask each agent to make a decision
         for agent in agents:
             
-            # Check if still alive
+            # Check if still alive. If dead, do only inform about the death
+            # if it has not been done already. If still alive, ask for a
+            # decision.
             if not state["characters"][agent.name]["state"]["alive"]:
+                if len(state_history) >= 2 and state_history[-2]["characters"][agent.name]["state"]["alive"]:
+                    agent.inform_death()
                 continue
-
-            # Ask the agent to make a decision if the character is still alive
-            action = agent.interrogate()
+            else:
+                action = agent.interrogate()
 
             # Send the decision to the game
             game_.set_action(agent.name, action)
