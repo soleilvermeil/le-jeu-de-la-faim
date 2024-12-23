@@ -41,10 +41,6 @@ if __name__ == '__main__':
         Trust your sharp mind and instincts to stay one step ahead, and use subtlety to your advantage.
     """).replace("\n", " ").strip()
 
-
-
-
-
     agents = [
         Agent("Katniss", "ChatGPT", api_key=API_KEY, system_prompt=katniss_system_prompt, verbose=True),
         Agent("Cato", "ChatGPT", api_key=API_KEY, system_prompt=cato_system_prompt, verbose=True),
