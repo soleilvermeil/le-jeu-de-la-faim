@@ -163,3 +163,4 @@ cython_debug/
 old/
 logs/
 .DS_Store
+*test*
