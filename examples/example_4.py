@@ -9,7 +9,7 @@ from game.interface import Agent, main
 
 if __name__ == '__main__':
     
-        # Define numerical values
+    # Define numerical values
     HIGH = 0.8
     UNSPECIFIED = 0.5
     LOW = 0.2
@@ -42,6 +42,7 @@ if __name__ == '__main__':
         }
     }
 
+    # Define tributes
     tributes = {
         ( 1,   "male"): {"name": "Marvel", "personality": PERSONNALITIES["ruthless/cold-blooded"]},
         ( 1, "female"): {"name": "Glimmer", "personality": PERSONNALITIES["manipulative/charismatic"]},
@@ -69,6 +70,7 @@ if __name__ == '__main__':
         (12, "female"): {"name": "Katniss Everdeen", "personality": PERSONNALITIES["noble/heroic"]},
     }
 
+    # Get user input
     while True:
         name = input("Enter your name: ")
         if name:
@@ -83,20 +85,25 @@ if __name__ == '__main__':
         if gender in ["m", "f"]:
             gender = {"m": "male", "f": "female"}[gender]
             break
-
+    
+    # Create agents
     agents = []
     for key, value in tributes.items():
 
+        # Get values
         name_ = value["name"]
         district_ = key[0]
         gender_ = key[1]
 
+        # If the agent is equal to the user's input, replace it with the user
         if district_ == district and gender_ == gender:
             print("You are a {gender} tribute from District {district}.".format(gender=gender_, district=district_))
             agents.append(Agent(
                 name=name,
                 model="cmd",
             ))
+
+        # Otherwise, create the agent with the predefined values
         else:
             if name_ is None:
                 name_ = "District {district} {gender}".format(gender=gender_, district=district_)
@@ -106,5 +113,6 @@ if __name__ == '__main__':
                 hostility=value["personality"]["hostility"],
                 resilience=value["personality"]["resilience"],
             ))
-            
+
+    # Start the game    
     main(agents, verbose=False)
