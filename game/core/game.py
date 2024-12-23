@@ -447,7 +447,9 @@ class Game:
             if character.position[1] < TERRAIN_RADIUS:
                 potential_directions.append("go north")
             direction = random.choice(potential_directions)
-            character.move(direction)
+            self.save_message("🔥🔥 You tried fleeing to the {direction}".format(direction=direction.replace("go ", "")), channel=character.name)
+            self.save_message("🔥🔥 {character} tried fleeing to the {direction}".format(character=character.name, direction=direction.replace("go ", "")), channel="debug")
+            character.move(direction, silent=True)
 
         # Kill characters that are still in the hazard zone
         for character in characters_in_hazard_zone:

@@ -90,7 +90,7 @@ class Character:
         return result[:-1]
 
 
-    def move(self, direction: Literal["stay", "go north", "go south", "go west", "go east"]) -> None:
+    def move(self, direction: Literal["stay", "go north", "go south", "go west", "go east"], silent: bool = False) -> None:
 
         # Move accordingly
         x, y = self.position
@@ -123,7 +123,8 @@ class Character:
         # If the character was moving, inform them of the current cell
         if direction != "stay":
             cell = self.__game.map_.cells[self.position]
-            self.__game.save_message("🚶{icon} You are now {biome}".format(icon=cell.icon, biome=cell.name.replace("|", " ")), channel=self.name)
+            if not silent:
+                self.__game.save_message("🚶{icon} You are now {biome}".format(icon=cell.icon, biome=cell.name.replace("|", " ")), channel=self.name)
 
 
     def act(self, action: str) -> None:
