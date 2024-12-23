@@ -117,6 +117,18 @@ class Agent:
             self.resilience = kwargs["resilience"]
             self.hostility = kwargs["hostility"]
 
+        elif model == "cmd":
+
+            pass
+
+        elif model == "random":
+
+            pass
+
+        else:
+
+            raise ValueError(f"Model {model} not recognized.")
+
     def give_state_of_game(self, game_state: str) -> None:
         """
         Sends the current state of the game to the LLM, which will later be
@@ -302,21 +314,27 @@ class Agent:
         elif self.model == "cmd":
 
             # Print to console the private message
+            print(str2border("Public POV (begin)"))
+            print(messages2str(self.current_state["game"]["public_messages"]))
+            print(str2border("Public POV (end)"))
+            print(str2border("Private POV (begin)"))
             print(messages2str(self.current_state["characters"][self.name]["private_messages"]))
+            print(str2border("Private POV (end)"))
 
-            action = ""
-
-            while action not in possible_actions:
-
-                # Ask the user to input an action
+            # Ask the user to input an actionQ
+            while True:
                 action = input(f"What do you want to do? ({possible_actions})\n")
+                if action in possible_actions:
+                    print(f"You chose to '{action}'.")
+                    break
 
             # Return
             return action
 
         else:
 
-            raise ValueError(f"Model {self.model} not recognized.")
+            # This should never happen
+            pass
             
     def is_alive(self) -> bool:
         return self.current_state["characters"][self.name]["state"]["alive"]
