@@ -207,7 +207,7 @@ class Character:
 
         # Print a debug message
         if value > 0:
-            self.__game.save_message("f🎉✅ Hype for {character} increased by {hype}".format(character=self.name, hype=value), channel="debug")
+            self.__game.save_message("🎉✅ Hype for {character} increased by {hype}".format(character=self.name, hype=value), channel="debug")
         elif value < 0:
             self.__game.save_message("🎉❌ Hype for {character} decreased by {hype}".format(character=self.name, hype=abs(value)), channel="debug")
 
@@ -427,17 +427,17 @@ class Character:
                 # Choose a gift
                 gift = random.choice(potential_gift)
                 if gift == "water":
-                    water = 3
-                    self.bag.water += water
+                    delta_water = GIFT_WATER
+                    self.bag.water += delta_water
                     self.__game.save_message("🎁💧 You received some water from an unknown sponsor ", channel=self.name)
-                    self.__game.save_message("🎁💧 {character} received {water} water from an unknown sponsor ".format(character=self.name, water=water), channel="debug")
+                    self.__game.save_message("🎁💧 {character} received {water} water from an unknown sponsor ".format(character=self.name, water=delta_water), channel="debug")
                 if gift == "food":
-                    food = 3
-                    self.bag.food += food
+                    delta_food = GIFT_FOOD
+                    self.bag.food += delta_food
                     self.__game.save_message("🎁🍒 You received some food from an unknown sponsor ", channel=self.name)
-                    self.__game.save_message("🎁🍒 {character} received {food} food from an unknown sponsor ".format(character=self.name, food=food), channel="debug")
+                    self.__game.save_message("🎁🍒 {character} received {food} food from an unknown sponsor ".format(character=self.name, food=delta_food), channel="debug")
                 if gift == "medecine":
-                    delta_health = 3
+                    delta_health = GIFT_HEALTH
                     self.health = min(self.health + delta_health, MAX_HEALTH)
                     self.__game.save_message("🎁💊 You received some medecine from an unknown sponsor ", channel=self.name)
                     self.__game.save_message("🎁💊 {character}'s health was restored by {health} thanks to an unknown sponsor ".format(character=self.name, health=delta_health), channel="debug")
@@ -482,15 +482,15 @@ class Character:
         elif self.thirst > MAX_THIRST // 2:
             self.thirst -= 1
             self.__game.save_message("💧❌ You are slightly thirsty ", channel=self.name)
-            self.__game.save_message("💧❌ {character} is thirsty and will die in {turns} turns ".format(character=self.name, turns=self.thirst+1), channel="debug")
+            # self.__game.save_message("💧❌ {character} is thirsty and might die in {turns} turns ".format(character=self.name, turns=self.thirst+1), channel="debug")
         elif self.thirst > 1:
             self.thirst -= 1
             self.__game.save_message("💧❌ You are thirsty ", channel=self.name)
-            self.__game.save_message("💧❌ {character} is thirsty and will die in {turns} turns ".format(character=self.name, turns=self.thirst+1), channel="debug")
+            self.__game.save_message("💧❌ {character} is thirsty and might die in {turns} turns ".format(character=self.name, turns=self.thirst+1), channel="debug")
         elif self.thirst == 1:
             self.thirst -= 1
             self.__game.save_message("💧❌ You are deshydrated and will die next turn if you don't manage to find water ", channel=self.name)
-            self.__game.save_message("💧❌ {character} is deshydrated and will die next turn ".format(character=self.name), channel="debug")
+            self.__game.save_message("💧❌ {character} is deshydrated and might die next turn ".format(character=self.name), channel="debug")
         else:
             self.alive = False
             self.statistics["cause_of_death"] = "thirst"
@@ -508,15 +508,15 @@ class Character:
         elif self.hunger > MAX_HUNGER // 2:
             self.hunger -= 1
             self.__game.save_message("🍒❌ You are slightly hungry ", channel=self.name)
-            self.__game.save_message("🍒❌ {character} is hungry and will die in {turns} turns ".format(character=self.name, turns=self.hunger+1), channel="debug")
+            # self.__game.save_message("🍒❌ {character} is hungry and might die in {turns} turns ".format(character=self.name, turns=self.hunger+1), channel="debug")
         elif self.hunger > 1:
             self.hunger -= 1
             self.__game.save_message("🍒❌ You are hungry", channel=self.name)
-            self.__game.save_message("🍒❌ {character} is hungry and will die in {turns} turns ".format(character=self.name, turns=self.hunger+1), channel="debug")
+            self.__game.save_message("🍒❌ {character} is hungry and might die in {turns} turns ".format(character=self.name, turns=self.hunger+1), channel="debug")
         elif self.hunger == 1:
             self.hunger -= 1
             self.__game.save_message("🍒❌ You are starving and will die next turn if you don't manage to find food ", channel=self.name)
-            self.__game.save_message("🍒❌ {character} is starving and will die next turn ".format(character=self.name), channel="debug")
+            self.__game.save_message("🍒❌ {character} is starving and might die next turn ".format(character=self.name), channel="debug")
         else:
             self.alive = False
             self.statistics["cause_of_death"] = "hunger"

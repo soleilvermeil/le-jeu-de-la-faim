@@ -47,6 +47,9 @@ HYPE_WHEN_ATTACKED = 20  # in previous version : 10
 HYPE_WHEN_GATHERING = 0  # in previous version : 0
 HYPE_WHEN_RESTING = -10  # in previous version : -10
 HYPE_WHEN_HIDING = -30   # in previous version : -30
+GIFT_FOOD = 1
+GIFT_WATER = 1
+GIFT_HEALTH = 3
 TIPS = [
     # Real tips:
     "Resources are harder to find at night...",
