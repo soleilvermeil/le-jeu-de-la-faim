@@ -74,7 +74,8 @@ class Game:
     def start_game(self):
         
         # Print the welcome message
-        self.save_message("🎉🎉 Welcome to the Hunger Games! 🎉🎉\n🎉🎉 {tributes} brave tributes stand ready, poised before the Cornucopia filled with weapons, where survival and strategy collide. 🎉🎉\n🎉🎉 In mere seconds, the Hunger Games will begin! 🎉🎉\n🎉🎉 May the odds be ever in your favor! 🎉🎉".format(tributes=len(self.__characters)), channel="public")
+        for channel in ["public", "debug"] + [c.name for c in self.__characters]:
+            self.save_message("🎉🎉 Welcome to the Hunger Games! 🎉🎉\n🎉🎉 {tributes} brave tributes stand ready, poised before the Cornucopia filled with weapons, where survival and strategy collide. 🎉🎉\n🎉🎉 In mere seconds, the Hunger Games will begin! 🎉🎉\n🎉🎉 May the odds be ever in your favor! 🎉🎉".format(tributes=len(self.__characters)), channel=channel)
 
     def get_state_of_game(self) -> Dict[str, str]:
 
@@ -362,7 +363,14 @@ class Game:
                         self.save_message(f"🔪❌ {attacker.name} tried to attack you, but you barely escaped", channel=attacked.name)
                         self.save_message(f"🔪❌ {attacker.name} tried to attack {attacked.name}, but they escaped", channel="debug")
                 
-                # If one of the characters is dead during the resolve, simply skip
+                # If one of the characters is dead during the resolve, skip.
+                # More precisely: if the attacked died (and thus if the
+                # attacker is still alive), simply state that nobody was found.
+                elif attacker.alive:
+                    self.save_message(f"🔪❌ You found nobody nearby", channel=attacker.name)
+                    self.save_message(f"🔪❌ {attacker.name} wanted to attack {attacked.name}, but they died in the meantime", channel="debug")
+                
+                # If the attacker died, simply skip.
                 else:
                     pass
 
@@ -513,13 +521,12 @@ class Game:
 
         # Announce deaths (preivously only happened during the day)
         new_deaths = [character for character in self.__characters if not character.alive and character not in self.__announced_dead_characters]
-        if len(new_deaths) > 0:
-            self.save_message("💀🫡 The fallen:", channel="public", emphasis=True)
-            self.save_message("💀🫡 The fallen:", channel="debug", emphasis=True)
-            for character in new_deaths:
-                self.save_message(f"- {character.name}", channel="public")
-                self.save_message(f"- {character.name}", channel="debug")
-                self.__announced_dead_characters.append(character)
+        for channel in ["public", "debug"] + [c.name for c in self.__characters]:
+            if len(new_deaths) > 0:
+                self.save_message("💀🫡 The fallen:", channel=channel, emphasis=True)
+                for character in new_deaths:
+                    self.save_message(f"- {character.name}", channel=channel)
+                    self.__announced_dead_characters.append(character)
         self.save_message(f"⚔️⚔️ Remaining tributes:", channel="debug", emphasis=True)
         for character in self.get_alive_characters():
             self.save_message(f"- {character.name}", channel="debug")
