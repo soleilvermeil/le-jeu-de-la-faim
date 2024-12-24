@@ -144,7 +144,7 @@ class Agent:
         """
 
         # Get the possible actions
-        full_message = messages2str(self.current_state["characters"][self.name]["private_messages"])
+        full_message = messages2str(self.current_state["characters"][self.name]["messages"])
         possible_actions = re.findall(r"\((.*?)\)", full_message)[-1].split(", ")
 
         if self.model == "random":
@@ -185,10 +185,10 @@ class Agent:
             # Build message to send
             new_user_message = "\n".join([
                 str2border("Public POV (begin)"),
-                messages2str(self.current_state["game"]["public_messages"]),
+                messages2str(self.current_state["game"]["messages"]),
                 str2border("Public POV (end)"),
                 str2border("Private POV (begin)"),
-                messages2str(self.current_state["characters"][self.name]["private_messages"]),
+                messages2str(self.current_state["characters"][self.name]["messages"]),
                 str2border("Private POV (end)"),
             ])
 
@@ -315,10 +315,10 @@ class Agent:
 
             # Print to console the private message
             print(str2border("Public POV (begin)"))
-            print(messages2str(self.current_state["game"]["public_messages"]))
+            print(messages2str(self.current_state["game"]["messages"]))
             print(str2border("Public POV (end)"))
             print(str2border("Private POV (begin)"))
-            print(messages2str(self.current_state["characters"][self.name]["private_messages"]))
+            print(messages2str(self.current_state["characters"][self.name]["messages"]))
             print(str2border("Private POV (end)"))
 
             # Ask the user to input an actionQ
@@ -347,10 +347,10 @@ class Agent:
             # Build message to send
             new_user_message = "\n".join([
                 str2border("Public POV (begin)"),
-                messages2str(self.current_state["game"]["public_messages"]),
+                messages2str(self.current_state["game"]["messages"]),
                 str2border("Public POV (end)"),
                 str2border("Private POV (begin)"),
-                messages2str(self.current_state["characters"][self.name]["private_messages"]),
+                messages2str(self.current_state["characters"][self.name]["messages"]),
                 str2border("Private POV (end)"),
                 f"You are dead {self.name}. Shall your name forever be forgotten."
             ])
@@ -397,10 +397,10 @@ class Agent:
 
             # Print to console the private message
             print(str2border("Public POV (begin)"))
-            print(messages2str(self.current_state["game"]["public_messages"]))
+            print(messages2str(self.current_state["game"]["messages"]))
             print(str2border("Public POV (end)"))
             print(str2border("Private POV (begin)"))
-            print(messages2str(self.current_state["characters"][self.name]["private_messages"]))
+            print(messages2str(self.current_state["characters"][self.name]["messages"]))
             print(str2border("Private POV (end"))
 
             # Print the death message
@@ -415,6 +415,7 @@ def main(
     verbose: bool = False,
     save_txt: bool = False,
     save_tsv: bool = False,
+    **kwargs
 ) -> None:
 
     # Create the game object
@@ -438,7 +439,7 @@ def main(
         # Print the public messages
         if verbose:
             print(str2border(""))
-            print(messages2str(state["debug"]))
+            print(messages2str(state["debug"]["messages"]))
             print(str2border(""))
             
         # Send to all agents the state of the game
@@ -454,7 +455,7 @@ def main(
             # Print the private messages
             # if verbose:
             #     print(str2border(f"{agent.name}'s turn BEGIN"))
-            #     print(messages2str(state["characters"][agent.name]["private_messages"]))
+            #     print(messages2str(state["characters"][agent.name]["messages"]))
             #     print(str2border(f"{agent.name}'s turn END"))
 
         # If only a single character is left, exit the loop
@@ -489,7 +490,7 @@ def main(
         os.makedirs("logs", exist_ok=True)
         debug_messages = []
         for state in state_history:
-            debug_messages.append(messages2str(state["debug"]))
+            debug_messages.append(messages2str(state["debug"]["messages"]))
             debug_messages.append("")
         with open(os.path.join("logs", f"log_{game_.id}.txt"), "w", encoding="utf8") as f:
             f.write(messages2str(debug_messages) + "\n")

@@ -115,16 +115,18 @@ class Game:
                     "alive_characters": [c.name for c in self.get_alive_characters()],
                     "dead_characters": [c.name for c in self.get_dead_characters()],
                 },
-                "public_messages": self.public_messages,
+                "messages": self.public_messages,
             },
             "characters": {
                 c.name: {
                     "name": c.name,
                     "state": c.to_dict(),
-                    "private_messages": self.private_messages[c.name]
+                    "messages": self.private_messages[c.name]
                 } for c in self.__characters
             },
-            "debug": self.debug_messages
+            "debug": {
+                "messages": self.debug_messages,
+            }
         }
 
         # Reset messages
@@ -512,12 +514,12 @@ class Game:
         # Announce deaths (preivously only happened during the day)
         new_deaths = [character for character in self.__characters if not character.alive and character not in self.__announced_dead_characters]
         if len(new_deaths) > 0:
-            self.save_message("💀💀 Deaths of the day:", channel="public", emphasis=True)
-            self.save_message("💀💀 Deaths of the day:", channel="debug", emphasis=True)
+            self.save_message("💀🫡 The fallen:", channel="public", emphasis=True)
+            self.save_message("💀🫡 The fallen:", channel="debug", emphasis=True)
             for character in new_deaths:
                 self.save_message(f"- {character.name}", channel="public")
                 self.save_message(f"- {character.name}", channel="debug")
                 self.__announced_dead_characters.append(character)
-        self.save_message(f"💀💀 Remaining tributes:", channel="debug", emphasis=True)
+        self.save_message(f"⚔️⚔️ Remaining tributes:", channel="debug", emphasis=True)
         for character in self.get_alive_characters():
             self.save_message(f"- {character.name}", channel="debug")
