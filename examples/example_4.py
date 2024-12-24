@@ -7,6 +7,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from game.interface import Agent, main
 
 
+from game.utils import smart_input
+
+
 if __name__ == '__main__':
     
     # Define numerical values
@@ -66,25 +69,29 @@ if __name__ == '__main__':
         (10, "female"): {"name": None, "personality": PERSONNALITIES["terrified/timid"]},
         (11,   "male"): {"name": "Thresh", "personality": PERSONNALITIES["noble/heroic"]},
         (11, "female"): {"name": "Rue", "personality": PERSONNALITIES["noble/heroic"]},
-        (12,   "male"): {"name": "Peeta Mellark", "personality": PERSONNALITIES["manipulative/charismatic"]},
-        (12, "female"): {"name": "Katniss Everdeen", "personality": PERSONNALITIES["noble/heroic"]},
+        (12,   "male"): {"name": "Peeta", "personality": PERSONNALITIES["manipulative/charismatic"]},
+        (12, "female"): {"name": "Katniss", "personality": PERSONNALITIES["noble/heroic"]},
     }
 
     # Get user input
-    while True:
-        name = input("Enter your name: ")
-        if name:
-            break
-    while True:
-        district = input("Enter your district number (1-12): ")
-        if district.isdigit() and 1 <= int(district) <= 12:
-            district = int(district)
-            break
-    while True:
-        gender = input("Are you male or female? (m/f): ")
-        if gender in ["m", "f"]:
-            gender = {"m": "male", "f": "female"}[gender]
-            break
+    name = smart_input(
+        prompt="Enter your name: ",
+        validator=lambda x: x,
+        error_message="Invalid name. Please try again.",
+        default="Katniss",
+    )
+    district = int(smart_input(
+        prompt="Enter your district number (1-12): ",
+        validator=lambda x: x.isdigit() and 1 <= int(x) <= 12,
+        error_message="Invalid district number. Please enter a number between 1 and 12.",
+        default=12,
+    ))
+    gender = {"m": "male", "f": "female"}[smart_input(
+        prompt="Are you male or female? (m/f): ",
+        validator=lambda x: x in ["m", "f"],
+        error_message="Invalid gender. Please enter 'm' or 'f'.",
+        default="f",
+    )]
     
     # Create agents
     agents = []
@@ -97,7 +104,6 @@ if __name__ == '__main__':
 
         # If the agent is equal to the user's input, replace it with the user
         if district_ == district and gender_ == gender:
-            print("You are a {gender} tribute from District {district}.".format(gender=gender_, district=district_))
             agents.append(Agent(
                 name=name,
                 model="cmd",

@@ -184,12 +184,12 @@ class Agent:
             
             # Build message to send
             new_user_message = "\n".join([
-                str2border("Public POV (begin)"),
-                messages2str(self.current_state["game"]["messages"]),
-                str2border("Public POV (end)"),
-                str2border("Private POV (begin)"),
+                # str2border("Public POV (begin)"),
+                # messages2str(self.current_state["game"]["messages"]),
+                # str2border("Public POV (end)"),
+                # str2border("Private POV (begin)"),
                 messages2str(self.current_state["characters"][self.name]["messages"]),
-                str2border("Private POV (end)"),
+                # str2border("Private POV (end)"),
             ])
 
             payload_to_send = {
@@ -313,20 +313,24 @@ class Agent:
 
         elif self.model == "cmd":
 
-            # Print to console the private message
-            print(str2border("Public POV (begin)"))
-            print(messages2str(self.current_state["game"]["messages"]))
-            print(str2border("Public POV (end)"))
-            print(str2border("Private POV (begin)"))
-            print(messages2str(self.current_state["characters"][self.name]["messages"]))
-            print(str2border("Private POV (end)"))
+            # Clear the console
+            os.system("cls" if os.name == "nt" else "clear")
 
-            # Ask the user to input an actionQ
-            while True:
-                action = input(f"What do you want to do? ({possible_actions})\n")
-                if action in possible_actions:
-                    print(f"You chose to '{action}'.")
-                    break
+            # Print to console the private message
+            # print(str2border("Public POV (begin)"))
+            # print(messages2str(self.current_state["game"]["messages"]))
+            # print(str2border("Public POV (end)"))
+            # print(str2border("Private POV (begin)"))
+            print(messages2str(self.current_state["characters"][self.name]["messages"]))
+            # print(str2border("Private POV (end)"))
+
+            # Ask the user to input an action
+            action = smart_input(
+                prompt=f"Your action ({', '.join(possible_actions)}): ",
+                validator=lambda x: x in possible_actions,
+                error_message="Invalid action. Please try again.",
+                default=None,
+            )
 
             # Return
             return action
@@ -346,13 +350,13 @@ class Agent:
 
             # Build message to send
             new_user_message = "\n".join([
-                str2border("Public POV (begin)"),
-                messages2str(self.current_state["game"]["messages"]),
-                str2border("Public POV (end)"),
-                str2border("Private POV (begin)"),
+                # str2border("Public POV (begin)"),
+                # messages2str(self.current_state["game"]["messages"]),
+                # str2border("Public POV (end)"),
+                # str2border("Private POV (begin)"),
                 messages2str(self.current_state["characters"][self.name]["messages"]),
-                str2border("Private POV (end)"),
-                f"You are dead {self.name}. Shall your name forever be forgotten."
+                # str2border("Private POV (end)"),
+                f"\nYou are dead {self.name}. Shall your name forever be forgotten."
             ])
 
             # Building a (fake) payload
@@ -396,15 +400,15 @@ class Agent:
         elif self.model == "cmd":
 
             # Print to console the private message
-            print(str2border("Public POV (begin)"))
-            print(messages2str(self.current_state["game"]["messages"]))
-            print(str2border("Public POV (end)"))
-            print(str2border("Private POV (begin)"))
+            # print(str2border("Public POV (begin)"))
+            # print(messages2str(self.current_state["game"]["messages"]))
+            # print(str2border("Public POV (end)"))
+            # print(str2border("Private POV (begin)"))
             print(messages2str(self.current_state["characters"][self.name]["messages"]))
-            print(str2border("Private POV (end"))
+            # print(str2border("Private POV (end"))
 
             # Print the death message
-            print(f"You are dead, {self.name}. Shall your name forever be forgotten.")
+            print(f"\nYou are dead, {self.name}. Shall your name forever be forgotten.")
             
     def is_alive(self) -> bool:
         return self.current_state["characters"][self.name]["state"]["alive"]
@@ -417,6 +421,10 @@ def main(
     save_tsv: bool = False,
     **kwargs
 ) -> None:
+    
+    # Check that all agents are unique
+    names = [agent.name for agent in agents]
+    assert len(names) == len(unique(names)), "All agents must have unique names."
 
     # Create the game object
     game_ = game.Game(character_names=[agent.name for agent in agents])

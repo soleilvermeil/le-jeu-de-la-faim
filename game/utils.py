@@ -1,5 +1,7 @@
 import random
-from typing import List, Dict
+from typing import List, Dict, Any, Literal
+import warnings
+import hashlib
 
 
 def map_range(x, x1, x2, y1, y2):
@@ -69,36 +71,58 @@ def std(lst: list) -> float:
     return (sum((x - mean)**2 for x in lst) / len(lst))**0.5
 
 
-def bootstrap(lst: list, iterations: int = 10000) -> Dict[str, Dict[str, float]]:
+def bootstrap(lst: list, iterations: int | Literal["inf"] = "inf") -> Dict[str, Dict[str, float]]:
     """
     Perform a bootstrap analysis on a list. Returns a dictionnary, where the
     keys are the unique elements of the list and the values are also
     dictionnaries with the mean and the standard deviation of the ratios.
     """
-    # Define ratios
-    ratios = {
-        element: [] for element in unique(lst)
-    }
+    # Caching some values
+    len_lst = len(lst)
+    unique_lst = unique(lst)
 
-    for _ in range(iterations):
+    if iterations == "inf":
 
-        # Sample `total_count` elements from `lst` with replacement
-        sample = random.choices(lst, k=len(lst))
-
-        # Add ratios to the dictionary
-        for element in unique(lst):
-            ratios[element].append(sample.count(element) / len(lst))
+        result = {}
+        for element in unique_lst:
+            exact_mean = lst.count(element) / len_lst
+            exact_variance = exact_mean * (1 - exact_mean) / len_lst
+            exact_std = exact_variance**0.5
+            result[element] = {
+                "mean": exact_mean,
+                "std": exact_std,
+            }
+        return result
     
-    # Put data in the right format
-    result = {
-        element: {
-            "mean": mean(ratios[element]),
-            "std": std(ratios[element]),
-        } for element in unique(lst)
-    }
-    
-    # Return
-    return result
+    else:
+
+        # Deprecation warning
+        warnings.warn("Using a finite number of iterations is deprecated. Use 'inf' instead for better results and performance.", DeprecationWarning)
+
+        # Define ratios
+        sample_ratios = {
+            element: [] for element in unique_lst
+        }
+
+        for _ in range(iterations):
+
+            # Sample `total_count` elements from `lst` with replacement
+            sample = random.choices(lst, k=len_lst)
+
+            # Add ratios to the dictionary
+            for element in unique_lst:
+                sample_ratios[element].append(sample.count(element) / len_lst)
+        
+        # Put data in the right format
+        result = {
+            element: {
+                "mean": mean(sample_ratios[element]),
+                "std": std(sample_ratios[element]),
+            } for element in unique_lst
+        }
+        
+        # Return
+        return result
 
 
 def smart_join(lst: List[str], sep: str = ", ", last_sep: str = " and ") -> str:
@@ -223,3 +247,45 @@ def replace_all(s: str, old_str: str, new_str: str) -> str:
     while old_str in s:
         s = s.replace(old_str, new_str)
     return s
+
+
+def smart_input(
+    prompt: str,
+    validator: callable,
+    error_message: str = "Invalid input. Please try again.",
+    default: Any | None = None,
+) -> Any:
+    
+    while True:
+
+        # Get user input
+        user_input = input(prompt)
+
+        # Check if default value should be returned
+        if not user_input and default is not None:
+            return default
+
+        try:
+            if validator(user_input):
+                return user_input
+        except:
+            print(error_message)
+
+
+def str2random(s: str, N: int) -> tuple:
+    """
+    Generates a reproducible list of N random floats in the range (0, 1) from a
+    given string.
+    """
+    # Hash the string using SHA-256
+    hash_object = hashlib.sha256(s.encode())
+    hash_digest = hash_object.hexdigest()
+    
+    # Convert the hash to an integer to use as a seed
+    hash_int = int(hash_digest, 16)
+    
+    # Seed the random number generator
+    random.seed(hash_int)
+    
+    # Generate N random floats in the range (0, 1)
+    return tuple([random.random() for _ in range(N)])
