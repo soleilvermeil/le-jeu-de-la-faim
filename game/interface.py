@@ -399,6 +399,9 @@ class Agent:
 
         elif self.model == "cmd":
 
+            # Clear the console
+            os.system("cls" if os.name == "nt" else "clear")
+            
             # Print to console the private message
             # print(str2border("Public POV (begin)"))
             # print(messages2str(self.current_state["game"]["messages"]))
