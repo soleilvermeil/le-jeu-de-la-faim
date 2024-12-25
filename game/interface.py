@@ -512,8 +512,22 @@ def main(
             for character in list(state["characters"].keys()):
                 character_state = state["characters"][character]
                 
-                flattened_game_state = flatten_dict({"game": game_state}, list_transform=lambda x: "<list>", str_transform=lambda x: x if "\n" not in x else "<str>")
-                flattened_character_state = flatten_dict({"character": character_state}, list_transform=lambda x: "<list>", str_transform=lambda x: x if "\n" not in x else "<str>")
+                flattened_game_state = flatten_dict({"game": game_state})
+                flattened_game_state = transform_dict_values(
+                    dct=flattened_game_state,
+                    transformations=[
+                        (list, lambda x: "<list>"),
+                        (str, lambda x: x if "\n" not in x else "<str>")
+                    ]
+                )
+                flattened_character_state = flatten_dict({"character": character_state})
+                flattened_character_state = transform_dict_values(
+                    dct=flattened_character_state,
+                    transformations=[
+                        (list, lambda x: "<list>"),
+                        (str, lambda x: x if "\n" not in x else "<str>")
+                    ]
+                )
                 
                 combined_state = {**flattened_game_state, **flattened_character_state}
 
