@@ -469,6 +469,8 @@ class Game:
                 self.save_message(f"💀🔥 You did not manage to escape the danger", channel=character.name)
                 self.save_message(f"💀💀 {character.name} died", channel="public", anti_channels=[character.name])
                 self.save_message(f"💀🔥 {character.name} did not manage to escape the danger", channel="debug")
+                for channel in [c.name for c in self.__characters if c != character]:
+                    self.save_message(f"💀💀 A tribute has fallen", channel=channel)
             else:
                 if random_bool(1-EVENT_FLEE_PROBABILITY):
                     character.alive = False
@@ -519,14 +521,21 @@ class Game:
         else:
             self.time = "day"
 
-        # Announce deaths (preivously only happened during the day)
-        new_deaths = [character for character in self.__characters if not character.alive and character not in self.__announced_dead_characters]
-        for channel in ["public", "debug"] + [c.name for c in self.__characters]:
-            if len(new_deaths) > 0:
-                self.save_message("💀🫡 The fallen:", channel=channel, emphasis=True)
-                for character in new_deaths:
-                    self.save_message(f"- {character.name}", channel=channel)
-                    self.__announced_dead_characters.append(character)
-        self.save_message(f"⚔️⚔️ Remaining tributes:", channel="debug", emphasis=True)
-        for character in self.get_alive_characters():
-            self.save_message(f"- {character.name}", channel="debug")
+        # Announce deaths (only at end of day)
+        if self.time == "night":
+            new_deaths = [character for character in self.__characters if not character.alive and character not in self.__announced_dead_characters]
+            for channel in ["public", "debug"] + [c.name for c in self.__characters]:
+                if len(new_deaths) > 0:
+                    self.save_message("💀🫡 The fallen:", channel=channel, emphasis=True)
+                    for character in new_deaths:
+                        self.save_message(f"- {character.name}", channel=channel)
+                        self.__announced_dead_characters.append(character)
+
+            # Announce the remaining tributes
+            for channel in ["public", "debug"] + [c.name for c in self.__characters]:
+                if channel == "debug":
+                    self.save_message(f"⚔️⚔️ The standing:", channel="debug", emphasis=True)
+                    for character in self.get_alive_characters():
+                        self.save_message(f"- {character.name}", channel="debug")
+                else:
+                    self.save_message(f"⚔️⚔️ {len(self.get_alive_characters())} tributes remain standing", channel=channel, emphasis=True)
