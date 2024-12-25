@@ -1,5 +1,5 @@
 import random
-from typing import List, Dict, Any, Literal
+from typing import List, Dict, Any, Literal, Tuple
 import warnings
 import hashlib
 
@@ -139,11 +139,7 @@ def smart_join(lst: List[str], sep: str = ", ", last_sep: str = " and ") -> str:
         return sep.join(lst[:-1]) + last_sep + lst[-1]
     
 
-def flatten_dict(
-    dct: dict,
-    list_transform: callable = (lambda x : x),
-    str_transform: callable = (lambda x : x),
-    sep: str = "_") -> dict:
+def flatten_dict(dct: dict, sep: str = "_", parent_key: Any = "") -> dict:
     """
     Flattens a dictionary that has nested dictionaries as values.
     For example, if `dct` is:
@@ -165,28 +161,30 @@ def flatten_dict(
     }
     ```
     """
+    items = []
+    for key, value in dct.items():
+        new_key = f"{parent_key}{sep}{key}" if parent_key else key
+        if isinstance(value, dict):
+            items.extend(flatten_dict(dct=value, sep=sep, parent_key=new_key).items())
+        else:
+            items.append((new_key, value))
+    return dict(items)
 
 
-    def _flatten(d, parent_key=""):
-        items = []
-        for key, value in d.items():
-            new_key = f"{parent_key}{sep}{key}" if parent_key else key
-            if isinstance(value, dict):
-                items.extend(_flatten(value, new_key).items())
-            else:
-                items.append((new_key, value))
-        return dict(items)
+def transform_dict_values(dct: dict, transformations: Tuple[type, callable]) -> dict:
+    """
+    Transforms the values of a dictionary according to a list of
+    transformations. The transformations are tuples where the first element is
+    the type of the value and the second element is a function that takes the
+    value as input and returns the transformed value.
+    """
+    new_dct = dct.copy()
+
+    for key, value in new_dct.items():
+        for transformation in transformations:
+            if isinstance(value, transformation[0]):
+                new_dct[key] = transformation[1](value)
     
-    new_dct = _flatten(dct)
-
-    for key, value in new_dct.items():
-        if isinstance(value, list):
-            new_dct[key] = list_transform(value)
-
-    for key, value in new_dct.items():
-        if isinstance(value, str):
-            new_dct[key] = str_transform(value)
-
     return new_dct
 
 
