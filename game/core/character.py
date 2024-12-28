@@ -264,6 +264,8 @@ class Character:
             self.__game.save_message("💀🔪 You killed {attacked_character}".format(attacked_character=self.name), channel=other.name)
             self.__game.save_message("💀🔪 {attacked_character} has been killed".format(attacked_character=self.name), channel="public", anti_channels=[self.name, other.name])
             self.__game.save_message("💀🔪 {attacked_character} has been killed by {attacking_character}".format(attacked_character=self.name, attacking_character=other.name), channel="debug")
+            for channel in [c.name for c in self.__game.get_alive_characters() if c != other]:
+                self.__game.save_message("💀💀 A tribute has fallen", channel=channel)
 
         # If still alive, gain some hype
         else:
@@ -497,6 +499,8 @@ class Character:
             self.__game.save_message("💀💧 You died of thirst ", channel=self.name)
             self.__game.save_message("💀💧 {character} died of thirst ".format(character=self.name), channel="public", anti_channels=self.name)
             self.__game.save_message("💀💧 {character} died of thirst ".format(character=self.name), channel="debug")
+            for channel in [c.name for c in self.__game.get_alive_characters()]:
+                self.__game.save_message("💀💀 A tribute has fallen", channel=channel)
             return
 
         # Hunger
@@ -523,6 +527,8 @@ class Character:
             self.__game.save_message("💀🍒 You died of hunger ", channel=self.name)
             self.__game.save_message("💀🍒 {character} died of hunger ".format(character=self.name), channel="public", anti_channels=[self.name])
             self.__game.save_message("💀🍒 {character} died of hunger ".format(character=self.name), channel="debug")
+            for channel in [c.name for c in self.__game.get_alive_characters()]:
+                self.__game.save_message("💀💀 A tribute has fallen", channel=channel)
             return
         
         # Energy: if a character does not rest during the night, they will lose
@@ -555,6 +561,8 @@ class Character:
                     self.__game.save_message("💀🧠 You killed yourself", channel=self.name)
                     self.__game.save_message("💀🧠 {character} killed themself".format(character=self.name), channel="public", anti_channels=[self.name])
                     self.__game.save_message("💀🧠 {character} killed themself".format(character=self.name), channel="debug")
+                    for channel in [c.name for c in self.__game.get_alive_characters()]:
+                        self.__game.save_message("💀💀 A tribute has fallen", channel=channel)
                     return
                 
         # If a character has not moved for 3 turns, their position is revealed
