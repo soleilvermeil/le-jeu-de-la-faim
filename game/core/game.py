@@ -251,6 +251,9 @@ class Game:
                 self.save_message("🔪💀 You have been slained by {attacking_character} ".format(attacking_character=character.name), channel=victim.name)
                 self.save_message("🔪💀 {attacking_character} slained {attacked_character}".format(attacking_character=character.name, attacked_character=victim.name), channel="public", anti_channels=[character.name, victim.name])
                 self.save_message("🔪💀 {attacking_character} slained {attacked_character}".format(attacking_character=character.name, attacked_character=victim.name), channel="debug")
+                for channel in [c.name for c in self.get_alive_characters() if c != victim]:
+                    self.save_message("💀💀 A tribute has fallen", channel=channel)
+
                 character.change_hype(HYPE_WHEN_KILLING)
 
         # Some characters that try to escape are hurt
