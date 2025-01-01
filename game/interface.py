@@ -7,6 +7,11 @@ from .utils import *
 from .agents.base_agent import BaseAgent
 
 
+# Define the type of the agent
+Agent = TypeVar("Agent", bound=BaseAgent)
+
+
+# TODO: Combine this with the same function from BaseAgent
 def __messages2str(messages: List[str]) -> str:
     """
     Returns a string representation of a list of messages.
@@ -24,6 +29,7 @@ def __messages2str(messages: List[str]) -> str:
     return messages
 
 
+# TODO: Put this in a similar place as __messages2str
 def __str2border(s: str, total_length: int = 80) -> str:
     """
     Returns a string with a border around it.
@@ -31,11 +37,10 @@ def __str2border(s: str, total_length: int = 80) -> str:
     return f"{s:-<{total_length-1}}"
 
 
-Agent = TypeVar("Agent", bound=BaseAgent)
-
-
 def save_txt(game_, state_history) -> None:
-    
+    """
+    Save the game log to a text file.
+    """
     os.makedirs("logs", exist_ok=True)
     debug_messages = []
     for state in state_history:
@@ -46,7 +51,10 @@ def save_txt(game_, state_history) -> None:
 
 
 def save_tsv(game_, state_history) -> None:
-
+    """
+    Save the full state history to a TSV file. Each row corresponds to a given
+    point in time in the game, times the number of characters in the game.
+    """
     os.makedirs("logs", exist_ok=True)
     data = {}
     for state in state_history:
