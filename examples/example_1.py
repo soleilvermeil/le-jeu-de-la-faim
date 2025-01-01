@@ -1,38 +1,39 @@
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from game.interface import Agent, main
+from game.agents.random_agent import RandomAgent
+from game.interface import main
 
 
 if __name__ == '__main__':
     
     agents = [
-        Agent("Alpha", "random"),
-        Agent("Bravo", "random"),
-        Agent("Charlie", "random"),
-        Agent("Delta", "random"),
-        Agent("Echo", "random"),
-        Agent("Foxtrot", "random"),
-        Agent("Golf", "random"),
-        Agent("Hotel", "random"),
-        Agent("India", "random"),
-        Agent("Juliet", "random"),
-        Agent("Kilo", "random"),
-        Agent("Lima", "random"),
-        Agent("Mike", "random"),
-        Agent("November", "random"),
-        Agent("Oscar", "random"),
-        Agent("Papa", "random"),
-        Agent("Quebec", "random"),
-        Agent("Romeo", "random"),
-        Agent("Sierra", "random"),
-        Agent("Tango", "random"),
-        Agent("Uniform", "random"),
-        Agent("Victor", "random"),
-        Agent("Whiskey", "random"),
-        Agent("Xray", "random"),
-        Agent("Yankee", "random"),
-        Agent("Zulu", "random"),
+        RandomAgent("Alpha"),
+        RandomAgent("Bravo"),
+        RandomAgent("Charlie"),
+        RandomAgent("Delta"),
+        RandomAgent("Echo"),
+        RandomAgent("Foxtrot"),
+        RandomAgent("Golf"),
+        RandomAgent("Hotel"),
+        RandomAgent("India"),
+        RandomAgent("Juliet"),
+        RandomAgent("Kilo"),
+        RandomAgent("Lima"),
+        RandomAgent("Mike"),
+        RandomAgent("November"),
+        RandomAgent("Oscar"),
+        RandomAgent("Papa"),
+        RandomAgent("Quebec"),
+        RandomAgent("Romeo"),
+        RandomAgent("Sierra"),
+        RandomAgent("Tango"),
+        RandomAgent("Uniform"),
+        RandomAgent("Victor"),
+        RandomAgent("Whiskey"),
+        RandomAgent("Xray"),
+        RandomAgent("Yankee"),
+        RandomAgent("Zulu"),
     ]
     
     main(agents, verbose=True)

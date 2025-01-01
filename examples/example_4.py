@@ -4,7 +4,9 @@ from typing import List, Tuple
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from game.interface import Agent, main
+from game.interface import main
+from game.agents.cmd_agent import CMDAgent
+from game.agents.personality_agent import PersonalityAgent
 
 
 from game.utils import smart_input
@@ -104,18 +106,14 @@ if __name__ == '__main__':
 
         # If the agent is equal to the user's input, replace it with the user
         if district_ == district and gender_ == gender:
-            agents.append(Agent(
-                name=name,
-                model="cmd",
-            ))
+            agents.append(CMDAgent(name=name))
 
         # Otherwise, create the agent with the predefined values
         else:
             if name_ is None:
                 name_ = "District {district} {gender}".format(gender=gender_, district=district_)
-            agents.append(Agent(
+            agents.append(PersonalityAgent(
                 name=name_,
-                model="personality",
                 hostility=value["personality"]["hostility"],
                 resilience=value["personality"]["resilience"],
             ))
