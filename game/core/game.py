@@ -200,8 +200,8 @@ class Game:
             self.phase = "move"
 
         # Show random tip
-        tip = random.choice(TIPS)
-        self.save_message("📝📝 {tip} ".format(tip=random.choice(TIPS)), channel="public", emphasis=True)
+        for channel in ["public"] + [c.name for c in self.__characters]:
+            self.save_message("📝📝 {tip} ".format(tip=random.choice(TIPS)), channel=channel, emphasis=True)
 
 
     def __get_characters_in_cell(self, position: Tuple[int, int]) -> List[Character]:
