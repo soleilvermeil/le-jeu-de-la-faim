@@ -37,7 +37,7 @@ def __str2border(s: str, total_length: int = 80) -> str:
     return f"{s:-<{total_length-1}}"
 
 
-def save_txt(game_, state_history) -> None:
+def __save_txt(game_, state_history) -> None:
     """
     Save the game log to a text file.
     """
@@ -50,7 +50,7 @@ def save_txt(game_, state_history) -> None:
         f.write(__messages2str(debug_messages) + "\n")
 
 
-def save_tsv(game_, state_history) -> None:
+def __save_tsv(game_, state_history) -> None:
     """
     Save the full state history to a TSV file. Each row corresponds to a given
     point in time in the game, times the number of characters in the game.
@@ -166,8 +166,8 @@ def main(
 
     # Save the game log
     if save_txt:
-        save_txt(game_, state_history)
+        __save_txt(game_, state_history)
         
     # Save the full state history
     if save_tsv:
-        save_tsv(game_, state_history)
+        __save_tsv(game_, state_history)
