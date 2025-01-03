@@ -2,7 +2,8 @@ import random
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from game.interface import Agent, main
+from game.interface import main
+from game.agents.personality_agent import PersonalityAgent
 
 
 if __name__ == '__main__':
@@ -82,9 +83,8 @@ if __name__ == '__main__':
 
     # Create agents    
     agents = [
-        Agent(
+        PersonalityAgent(
             name=name,
-            model="personality",
             resilience=PERSONNALITIES[model]["resilience"],
             hostility=PERSONNALITIES[model]["hostility"],
         )

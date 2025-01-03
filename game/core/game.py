@@ -396,57 +396,64 @@ class Game:
         it was aborted. If aborted, a normal turn should be performed.
         """
         # Get count of alive characters
-        alive_characters = len(self.get_alive_characters())
+        total_alive_characters: int = len(self.get_alive_characters())
 
         # Get all possible hazard zones
-        cells = list(itertools.product(range(-TERRAIN_RADIUS, TERRAIN_RADIUS + 1), repeat=2))
-        hazard_cells = {}
-        hazard_cells["north"] = [c for c in cells if c[1] > 0]
-        hazard_cells["south"] = [c for c in cells if c[1] < 0]
-        hazard_cells["east"] = [c for c in cells if c[0] < 0]
-        hazard_cells["west"] = [c for c in cells if c[0] > 0]
+        all_cells: List[Tuple[int, int]] = list(itertools.product(range(-TERRAIN_RADIUS, TERRAIN_RADIUS + 1), repeat=2))
+        cells_by_hazard_direction: Dict[str: List[Tuple[int, int]]] = {}
+        cells_by_hazard_direction["north"] = [c for c in all_cells if c[1] > 0]
+        cells_by_hazard_direction["south"] = [c for c in all_cells if c[1] < 0]
+        cells_by_hazard_direction["east"] = [c for c in all_cells if c[0] < 0]
+        cells_by_hazard_direction["west"] = [c for c in all_cells if c[0] > 0]
         
-        hazard_zone_weights = {}
-        characters_in_hazard_zones = {}
-        for key, element in hazard_cells.items():
-            characters_in_hazard_zones[key] = [c for c in self.__characters if c.alive and c.position in element]
+        hazard_zone_weights: Dict[str, float] = {}
+        characters_in_hazard_zones: Dict[str, List[Character]] = {}
+        for direction, cells in cells_by_hazard_direction.items():
+            characters_in_hazard_zones[direction] = [
+                c for c in self.__characters
+                if c.alive and c.position in cells
+            ]
             
-            characters_count = len(characters_in_hazard_zones[key])
-            sum_of_hypes = sum([c.hype for c in characters_in_hazard_zones[key]])
+            total_characters_in_hazard_zone = len(characters_in_hazard_zones[direction])
+            sum_of_hypes = sum([c.hype for c in characters_in_hazard_zones[direction]])
             
-            if characters_count == alive_characters:
+            if total_characters_in_hazard_zone == total_alive_characters:
                 # Never take a hazard zone were all characters are in
-                average_hype = sum_of_hypes / characters_count
+                average_hype = sum_of_hypes / total_characters_in_hazard_zone
                 zone_weight = 0
-            elif characters_count > 0 and sum_of_hypes > 0:
+            elif total_characters_in_hazard_zone > 0 and sum_of_hypes > 0:
                 # Usual case
-                average_hype = sum_of_hypes / characters_count
+                average_hype = sum_of_hypes / total_characters_in_hazard_zone
                 zone_weight = 1 / average_hype
-            elif characters_count > 0:
+            elif total_characters_in_hazard_zone > 0:
                 # If no hype, the weight is the number of characters in the zone (which is usually a low enough number for the weight to be very high)
-                average_hype = sum_of_hypes / characters_count
-                zone_weight = characters_count
+                average_hype = sum_of_hypes / total_characters_in_hazard_zone
+                zone_weight = total_characters_in_hazard_zone
             else:
                 # If no character, set everything to 0
                 average_hype = 0
                 zone_weight = 0
-            hazard_zone_weights[key] = zone_weight
-            self.save_message(f"🔥🔥 Hazard zone {key} has {characters_count} characters with an average hype of {average_hype:.2f} (weight = {zone_weight:.2f})", channel="debug")
+            hazard_zone_weights[direction] = zone_weight
+            self.save_message(f"🔥🔥 Hazard zone {direction} has {total_characters_in_hazard_zone} characters with an average hype of {average_hype:.2f} (weight = {zone_weight:.2f})", channel="debug")
         
         # Abort if no valid hazard zone is found
         if sum(list(hazard_zone_weights.values())) == 0:
             return "aborted"
         
         # Define hazard zone
-        hazard_zone = random.choices(list(hazard_zone_weights.keys()), list(hazard_zone_weights.values()))[0]
+        hazard_zone = random.choices(
+            list(hazard_zone_weights.keys()),
+            list(hazard_zone_weights.values()),
+        )[0]
         
         # Get all characters in the specific hazard zone
-        characters_in_hazard_zone = characters_in_hazard_zones[hazard_zone]
+        characters_in_hazard_zone: List[Character] = characters_in_hazard_zones[hazard_zone]
         
         for character in characters_in_hazard_zone:
             self.save_message("🔥🔥 A deadly event is occuring", channel=character.name)
         self.save_message(f"🔥🔥 Deadly zone is occuring {hazard_zone}", channel="debug")
-        self.save_message(f"🔥🔥 {len(characters_in_hazard_zone)} trapped characters: {', '.join([c.name for c in characters_in_hazard_zone])}", channel="debug")
+        # TODO: put the following back
+        # self.save_message(f"🔥🔥 {len(characters_in_hazard_zone)} trapped characters: {', '.join([c.name for c in total_characters_in_hazard_zone])}", channel="debug")
 
         # Each character moves in a random direction (TODO: the character can chose)
         for character in characters_in_hazard_zone:
@@ -466,7 +473,7 @@ class Game:
 
         # Kill characters that are still in the hazard zone
         for character in characters_in_hazard_zone:
-            if character.position in hazard_cells[hazard_zone]:
+            if character.position in cells_by_hazard_direction[hazard_zone]:
                 character.alive = False
                 character.statistics["cause_of_death"] = "hazard"
                 self.save_message(f"💀🔥 You did not manage to escape the danger", channel=character.name)

@@ -19,11 +19,39 @@ This repository contains a Python-based simulator for the Hunger Games.  It allo
 
 ## Code Structure:
 
-* **`game/`:** Contains the core game logic, including character management, map generation, weapon definitions, and event handling.
-* **`interface.py`:** Provides the interface for interacting with the game, managing agents, and running simulations.
-* **`utils.py`:** Contains utility functions used throughout the project.
-* **`ChatGPT/`:**  (If using ChatGPT) Contains prompt templates and configuration files for interacting with the OpenAI API.
-* **`example_*.py`:** Example scripts demonstrating different usage scenarios, namely
-  * `example_1.py` is a minimal example, with agents set to have a random behaviour;
-  * `example_2.py` is an example where agents have each a given `hostility` and `resilience`, giving more unique behaviours;
-  * `example_3.py` introduces to the use of ChatGPT.
+* **`game/`:** Contains all the game logic and core functionality.
+  * **`game/core/`:** Contains the core game logic, including character management, map generation, weapon definitions, and event handling.
+  * **`game/agents/`:** Contains the different AI models available for agents, including random, rule-based, ChatGPT-powered and user-controllable agents, namely:
+    | File | Model | Description |
+    | --- | --- | --- |
+    | `random_agent.py` | Random Agent | Makes random decisions while trying to maintain vitals above zero. |
+    | `personality_agent.py` | Personality Agent | Makes decisions based on given `hostility` and `resilience` values. |
+    | `llm_agent.py` | ChatGPT Agent | Uses ChatGPT to make decisions. |
+    | `cmd_agent.py` | User-Controlled Agent | Allows the user to control the agent. |
+  * `game/interface.py`: Provides the interface for interacting with the game, managing agents, and running simulations.
+  * `game/utils.py`: Contains utility functions used throughout the project.
+* **`examples/`:** Contains example scripts demonstrating different usage scenarios.
+  * `examples/example_1.py` is a minimal example, with agents set to have a random behaviour;
+  * `examples/example_2.py` is an example where agents have each a given `hostility` and `resilience`, giving more unique behaviours;
+  * `examples/example_3.py` introduces to the use of ChatGPT.
+  * `examples/example_4.py` is an example where one agent is controlled by the user.
+
+## Minimal example
+
+```python
+# Depending on the code structure, you may need to adjust the import paths. For
+# example, this is used inside the `example_*.py` files:
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
+# Import the interface
+from game.interface import main
+
+# Import an agent class (e.g. RandomAgent)
+from game.agents.random_agent import RandomAgent
+
+# Run the main, giving a list of agents as argument
+agents = [RandomAgent("Alice"), RandomAgent("Bob"), RandomAgent("Charlie")]
+main(agents)
+```
