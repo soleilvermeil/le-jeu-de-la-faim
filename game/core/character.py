@@ -106,11 +106,12 @@ class Character:
             x += 1
         else:
             pass
-            # raise ValueError(f"Unknown direction: {direction}")
         if self.position != (x, y):
             biome = self.__game.map_.cells[(x, y)].name.replace("|", " ")
             icon = self.__game.map_.cells[(x, y)].icon
             self.__game.save_message("🚶{icon} {character} moved from {coords1} to {coords2}, and is now {biome}".format(icon=icon, character=self.name, coords1=coords(self.position), coords2=coords(x, y), biome=biome), channel="debug")
+        else:
+            self.__game.save_message("🚶❎ {character} decided to stay at {coords1}".format(character=self.name, coords1=coords(self.position)), channel="debug")
         self.position = (x, y)
 
         # Update the statistics
@@ -412,7 +413,7 @@ class Character:
         # Hype: Each turn, a character might receive a gift if their hype is high enough
         if random_bool(self.hype / MAX_HYPE):
             self.__game.save_message("🎁🎉 An unknown sponsor sent a gift to {character} ".format(character=self.name), channel="public")
-            self.__game.save_message("🎁🎉 An unknown sponsor sent a gift to {character} (proba = {proba}) ".format(character=self.name, proba=f"{self.hype / MAX_HYPE:.0%}"), channel="debug")
+            self.__game.save_message("🎁🎉 An unknown sponsor sent a gift to {character} (proba = {proba:.0%}) ".format(character=self.name, proba=self.hype / MAX_HYPE), channel="debug")
             potential_gift = []
             if self.bag.water == 0 and self.thirst < MAX_THIRST:
                 potential_gift.append("water")
