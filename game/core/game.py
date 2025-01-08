@@ -181,11 +181,15 @@ class Game:
             
             if self.time == "night" and random_bool(EVENT_PROBABILITY):
                 
-                # Resolve random event
-                status = self.__resolve_random_event()
-                
-                # If the event was aborted, resolve actions instead
-                if status == "aborted":
+                # Resolve hazard
+                hazard_region = self.__get_lowest_hype_region()
+
+                if hazard_region is not None:
+                    characters_in_hazard_region = self.__get_characters_in_region(region=hazard_region)
+                    characters_outside_hazard_region = [c for c in self.get_alive_characters() if c not in characters_in_hazard_region]
+                    self.__resolve_actions(characters_subset=characters_outside_hazard_region)
+                    self.__resolve_hazard(hazard_region=hazard_region)
+                else:
                     self.__resolve_actions()
 
             else:
@@ -302,7 +306,96 @@ class Game:
                 self.save_message("👀👀 {character} spoted {characters} nearby".format(character=character.name, characters=smart_join([p.name for p in static_characters_in_same_cell], sep=", ", last_sep=" and ")), channel="debug")
 
 
-    def __resolve_actions(self):
+    def __get_cells_in_region(self, region: Literal["north", "south", "east", "west"]) -> List[Tuple[int, int]]:
+        
+        # Get all cells
+        all_cells: List[Tuple[int, int]] = list(itertools.product(range(-TERRAIN_RADIUS, TERRAIN_RADIUS + 1), repeat=2))
+
+        # Filter cells based on region and return
+        if region == "north":
+            return [c for c in all_cells if c[1] > 0]
+        elif region == "south":
+            return [c for c in all_cells if c[1] < 0]
+        elif region == "east":
+            return [c for c in all_cells if c[0] < 0]
+        elif region == "west":
+            return [c for c in all_cells if c[0] > 0]
+        else:
+            raise ValueError("Region must be one of 'north', 'south', 'east', 'west'")
+
+
+    def __get_characters_in_region(self, region: Literal["north", "south", "east", "west"]) -> List[Character]:
+
+        # Get cells in region
+        cells_in_region = self.__get_cells_in_region(region=region)
+
+        # Filter characters based on cells and return
+        characters_in_region = [
+            c for c in self.__characters
+            if c.alive and c.position in cells_in_region
+        ]
+        return characters_in_region
+
+
+    def __get_lowest_hype_region(self) -> Literal["north", "south", "east", "west"] | None:
+        
+        # Define weight for each region
+        region_weights: Dict[str, float] = {
+            "north": 0,
+            "south": 0,
+            "east": 0,
+            "west": 0,
+        }
+
+        for region in ["north", "south", "east", "west"]:
+
+            # Get infos useful for later
+            characters_in_region = self.__get_characters_in_region(region=region)
+            total_characters_in_region = len(characters_in_region)
+            sum_of_hypes = sum([c.hype for c in characters_in_region])
+
+            # Never take a hazard zone were all characters are in
+            if total_characters_in_region == len(self.get_alive_characters()):
+                average_hype = sum_of_hypes / total_characters_in_region
+                zone_weight = 0
+
+            # Usual case
+            elif total_characters_in_region > 0 and sum_of_hypes > 0:
+                average_hype = sum_of_hypes / total_characters_in_region
+                zone_weight = 1 / average_hype
+
+            # If no hype, the weight is the number of characters in the zone (which is usually a low enough number for the weight to be very high)
+            elif total_characters_in_region > 0:
+                average_hype = sum_of_hypes / total_characters_in_region
+                zone_weight = total_characters_in_region
+
+            # If no character, set everything to 0
+            else:
+                average_hype = 0
+                zone_weight = 0
+                
+            region_weights[region] = zone_weight
+            self.save_message(
+                "🔥🔥 Region {region} has {total_characters_in_hazard_zone} characters with an average hype of {average_hype:.2f} (weight = {zone_weight:.2f})"
+                .format(region=region, total_characters_in_hazard_zone=total_characters_in_region, average_hype=average_hype, zone_weight=zone_weight),
+                channel="debug",
+            )
+        
+        # Abort if no valid hazard zone is found
+        if sum(list(region_weights.values())) == 0:
+            self.save_message("🔥🔥 No valid hazard zone found", channel="debug")
+            return None
+        
+        # Return a random region based on the weights
+        chosen_region = random.choices(
+            list(region_weights.keys()),
+            list(region_weights.values()),
+        )[0]
+        self.save_message("🔥🔥 Chosen hazard zone: {chosen_region}".format(chosen_region=chosen_region), channel="debug")
+        return chosen_region
+
+
+    def __resolve_actions(self, characters_subset: List[Character] | None = None) -> None:
         """
         Once every character has chosen an action, the game will make them happen.
         Hunt actions are high priority and will be resolved first. Characters that
@@ -315,6 +408,10 @@ class Game:
 
             # Get all characters in the cell
             characters = self.__get_characters_in_cell((x, y))
+
+            # If using a subset, filter the characters
+            if characters_subset is not None:
+                characters = [c for c in characters if c in characters_subset]
 
             # Define random battles, useful for later
             hunting_characters = [character for character in characters if character.get_action() == "hunt"]
@@ -385,78 +482,24 @@ class Game:
                     self.save_message(f"🛌🔪 {character.name} couldn't rest because of the assault", channel="debug")
     
     
-    def __resolve_random_event(self) -> Literal["success", "aborted"]:
+    def __resolve_hazard(self, hazard_region: Literal["north", "south", "east", "west"]) -> None:
         """
         During the game, events can happen. Approximately half of the terrain
         will be dangerous at night, and characters randomly move. The ones who
         do not move out of the dangerous zone will be killed. Note that the
         event will focus regions where tributes have the lowest average hype.
-        
-        Returns a string indicating if the random event did indeed occur, or if
-        it was aborted. If aborted, a normal turn should be performed.
         """
-        # Get count of alive characters
-        total_alive_characters: int = len(self.get_alive_characters())
+        
+        characters_in_hazard_region = self.__get_characters_in_region(region=hazard_region)
 
-        # Get all possible hazard zones
-        all_cells: List[Tuple[int, int]] = list(itertools.product(range(-TERRAIN_RADIUS, TERRAIN_RADIUS + 1), repeat=2))
-        cells_by_hazard_direction: Dict[str: List[Tuple[int, int]]] = {}
-        cells_by_hazard_direction["north"] = [c for c in all_cells if c[1] > 0]
-        cells_by_hazard_direction["south"] = [c for c in all_cells if c[1] < 0]
-        cells_by_hazard_direction["east"] = [c for c in all_cells if c[0] < 0]
-        cells_by_hazard_direction["west"] = [c for c in all_cells if c[0] > 0]
-        
-        hazard_zone_weights: Dict[str, float] = {}
-        characters_in_hazard_zones: Dict[str, List[Character]] = {}
-        for direction, cells in cells_by_hazard_direction.items():
-            characters_in_hazard_zones[direction] = [
-                c for c in self.__characters
-                if c.alive and c.position in cells
-            ]
-            
-            total_characters_in_hazard_zone = len(characters_in_hazard_zones[direction])
-            sum_of_hypes = sum([c.hype for c in characters_in_hazard_zones[direction]])
-            
-            if total_characters_in_hazard_zone == total_alive_characters:
-                # Never take a hazard zone were all characters are in
-                average_hype = sum_of_hypes / total_characters_in_hazard_zone
-                zone_weight = 0
-            elif total_characters_in_hazard_zone > 0 and sum_of_hypes > 0:
-                # Usual case
-                average_hype = sum_of_hypes / total_characters_in_hazard_zone
-                zone_weight = 1 / average_hype
-            elif total_characters_in_hazard_zone > 0:
-                # If no hype, the weight is the number of characters in the zone (which is usually a low enough number for the weight to be very high)
-                average_hype = sum_of_hypes / total_characters_in_hazard_zone
-                zone_weight = total_characters_in_hazard_zone
-            else:
-                # If no character, set everything to 0
-                average_hype = 0
-                zone_weight = 0
-            hazard_zone_weights[direction] = zone_weight
-            self.save_message(f"🔥🔥 Hazard zone {direction} has {total_characters_in_hazard_zone} characters with an average hype of {average_hype:.2f} (weight = {zone_weight:.2f})", channel="debug")
-        
-        # Abort if no valid hazard zone is found
-        if sum(list(hazard_zone_weights.values())) == 0:
-            return "aborted"
-        
-        # Define hazard zone
-        hazard_zone = random.choices(
-            list(hazard_zone_weights.keys()),
-            list(hazard_zone_weights.values()),
-        )[0]
-        
-        # Get all characters in the specific hazard zone
-        characters_in_hazard_zone: List[Character] = characters_in_hazard_zones[hazard_zone]
-        
-        for character in characters_in_hazard_zone:
+        for character in characters_in_hazard_region:
             self.save_message("🔥🔥 A deadly event is occuring", channel=character.name)
-        self.save_message(f"🔥🔥 Deadly zone is occuring {hazard_zone}", channel="debug")
+        # self.save_message("🔥🔥 Deadly zone is occuring {hazard_region}".format(hazard_region=hazard_region), channel="debug")
         # TODO: put the following back
         # self.save_message(f"🔥🔥 {len(characters_in_hazard_zone)} trapped characters: {', '.join([c.name for c in total_characters_in_hazard_zone])}", channel="debug")
 
         # Each character moves in a random direction (TODO: the character can chose)
-        for character in characters_in_hazard_zone:
+        for character in characters_in_hazard_region:
             potential_directions = []
             if character.position[0] > -TERRAIN_RADIUS:
                 potential_directions.append("go west")
@@ -472,8 +515,8 @@ class Game:
             character.move(direction, silent=True)
 
         # Kill characters that are still in the hazard zone
-        for character in characters_in_hazard_zone:
-            if character.position in cells_by_hazard_direction[hazard_zone]:
+        for character in characters_in_hazard_region:
+            if character.position in self.__get_characters_in_region(hazard_region):
                 character.alive = False
                 character.statistics["cause_of_death"] = "hazard"
                 self.save_message(f"💀🔥 You did not manage to escape the danger", channel=character.name)
