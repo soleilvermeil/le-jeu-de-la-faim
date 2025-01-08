@@ -97,7 +97,11 @@ if __name__ == '__main__':
     # Make agents list
     agents = []
     for (district, gender), tribute in tributes.items():
-        name = tribute["name"] or f"District {district} {gender}"
+        if tribute["name"]:
+            name = "{name} (district {district})".format(name=tribute["name"], district=district)
+        else:
+            name = f"District {district} {gender}"
+        print(name)
         hostility = tribute["personality"]["hostility"]
         resilience = tribute["personality"]["resilience"]
         agents.append(PersonalityAgent(name, hostility=hostility, resilience=resilience))
@@ -162,7 +166,7 @@ if __name__ == '__main__':
 
     # Define a file to write the output
     new_file = os.path.basename(file).replace(".txt", "_commented.txt")
-    f = open(new_file, "a", encoding="utf8")
+    f = open(os.path.join("logs", new_file), "a", encoding="utf8")
 
     # Add blocks
     for block in blocks:
