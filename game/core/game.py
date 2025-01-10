@@ -2,6 +2,7 @@ from typing import List, Dict, Tuple, Literal
 import datetime
 import random
 import itertools
+import json
 from ..utils import *
 from .constants import *
 from .character import Character
@@ -50,8 +51,20 @@ class Game:
         message: str,
         channel: str,
         anti_channels: str = [],
-        emphasis: bool = False
+        emphasis: bool = False,
+        fmt: Dict[str, str] = {}
     ) -> None:
+        
+        # Load 'sentences.json'
+        sentences = json.load(open("game/core/sentences.json", "r", encoding="utf8"))
+
+        # Check if there is a key equal to the message. If so, return a random
+        # sentence from the list of sentences
+        if message in sentences:
+            message = random.choice(sentences[message] + [message])
+
+        # Format the message
+        message = message.format(**fmt)
 
         # If emphasis, put newline before and after
         if emphasis:
@@ -75,7 +88,11 @@ class Game:
         
         # Print the welcome message
         for channel in ["public", "debug"] + [c.name for c in self.__characters]:
-            self.save_message("🎉🎉 Welcome to the Hunger Games! 🎉🎉\n🎉🎉 {tributes} brave tributes stand ready, poised before the Cornucopia filled with weapons, where survival and strategy collide. 🎉🎉\n🎉🎉 In mere seconds, the Hunger Games will begin! 🎉🎉\n🎉🎉 May the odds be ever in your favor! 🎉🎉".format(tributes=len(self.__characters)), channel=channel)
+            self.save_message(
+                "🎉🎉 Welcome to the Hunger Games! 🎉🎉\n🎉🎉 {tributes} brave tributes stand ready, poised before the Cornucopia filled with weapons, where survival and strategy collide. 🎉🎉\n🎉🎉 In mere seconds, the Hunger Games will begin! 🎉🎉\n🎉🎉 May the odds be ever in your favor! 🎉🎉",
+                fmt={"tributes": len(self.__characters)},
+                channel=channel,
+            )
 
     def get_state_of_game(self) -> Dict[str, str]:
 
@@ -87,23 +104,48 @@ class Game:
             # If the character is the only one alive, announce the victory
             # instead of asking for an action
             if len(self.get_alive_characters()) == 1 and character.alive:
-                self.save_message("🎉🎉 You have won the Hunger Games! 🎉🎉 ", channel=character.name, emphasis=True)
-                self.save_message("🎉🎉 {character} has won the Hunger Games! 🎉🎉 ".format(character=character.name), channel="public", emphasis=True, anti_channels=[character.name])
-                self.save_message("🎉🎉 {character} has won the Hunger Games! 🎉🎉 ".format(character=character.name), channel="debug", emphasis=True)
+                self.save_message("🎉🎉 You have won the Hunger Games! 🎉🎉", channel=character.name, emphasis=True)
+                self.save_message(
+                    "🎉🎉 {character} has won the Hunger Games! 🎉🎉",
+                    fmt={"character": character.name},
+                    channel="public",
+                    emphasis=True,
+                    anti_channels=[character.name],
+                )
+                self.save_message(
+                    "🎉🎉 {character} has won the Hunger Games! 🎉🎉",
+                    fmt={"character": character.name},
+                    channel="debug",
+                    emphasis=True,
+                )
                 continue
 
             # If the day is 0, ask the character to choose between running
             # towards the cornucopia or running away from it
             if self.day == 0:
-                self.save_message("{character}, do you want to risk going to the cornucopia, or to play it safe by running away from it? (run towards, run away) ".format(character=character.name), channel=character.name, emphasis=True)
+                self.save_message(
+                    "{character}, do you want to risk going to the cornucopia, or to play it safe by running away from it? (run towards, run away)",
+                    fmt={"character": character.name},
+                    channel=character.name,
+                    emphasis=True,
+                )
             elif self.phase == "move":
                 map_ = self.map_.draw(discovered_cells=character.visited_cells, current_position=character.position)
-                self.save_message("{character}, you are currently at {coords}\n{map}\nWhere do you want to go? (go north, go south, go east, go west, stay) ".format(character=character.name, coords=coords(character.position), map=self.map_.draw(discovered_cells=character.visited_cells, current_position=character.position)), channel=character.name, emphasis=True)
+                self.save_message(
+                    "{character}, you are currently at {coords}\n{map}\nWhere do you want to go? (go north, go south, go east, go west, stay)",
+                    fmt={"character": character.name, "coords": coords(character.position), "map": map_},
+                    channel=character.name,
+                    emphasis=True)
             elif self.phase == "act":
                 food = character.bag.food if character.bag.food > 0 else "no"
                 water = character.bag.water if character.bag.water > 0 else "no"
                 weapon = character.get_best_weapon() if len(character.bag.weapons) > 0 else Weapon(name="no weapon", damage=1)
-                self.save_message("{character}, you have currently {food} food, {water} water, and are wielding {weapon}. What do you want to do? (hunt, gather, rest, hide) ".format(character=character.name, food=food, water=water, weapon=weapon.name), channel=character.name, emphasis=True)
+                self.save_message(
+                    "{character}, you have currently {food} food, {water} water, and are wielding {weapon}. What do you want to do? (hunt, gather, rest, hide)",
+                    fmt={"character": character.name, "food": food, "water": water, "weapon": weapon.name},
+                    channel=character.name,
+                    emphasis=True,
+                )
 
         # Build state
         state = {
@@ -153,7 +195,7 @@ class Game:
         if self.day == 0:
             # Show time (manually)
             for channel in ["public", "debug"] + [c.name for c in self.__characters]:
-                self.save_message("🩸🩸 The bloodbath has begun ", channel=channel, emphasis=True)
+                self.save_message("🩸🩸 The bloodbath has begun", channel=channel, emphasis=True)
 
             # Resolve the first turn
             self.__resolve_first_turn()
@@ -205,7 +247,12 @@ class Game:
 
         # Show random tip
         for channel in ["public"] + [c.name for c in self.__characters]:
-            self.save_message("📝📝 {tip} ".format(tip=random.choice(TIPS)), channel=channel, emphasis=True)
+            self.save_message(
+                "📝📝 {tip}",
+                fmt={"tip": random.choice(TIPS)},
+                channel=channel,
+                emphasis=True,
+            )
 
 
     def __get_characters_in_cell(self, position: Tuple[int, int]) -> List[Character]:
@@ -242,8 +289,22 @@ class Game:
             weapon_tuple: tuple = random.choice(WEAPONS)
             weapon: Weapon = Weapon(name=weapon_tuple[0], damage=weapon_tuple[1])
             character.bag.add_weapon(weapon)
-            self.save_message("🔪➕ You found {weapon} ".format(weapon=weapon.name), channel=character.name)
-            self.save_message("🔪➕ {character} found a weapon ".format(character=character.name), channel="public", anti_channels=[character.name])
+            self.save_message(
+                "🔪➕ You found {weapon}",
+                fmt={"weapon": weapon.name},
+                channel=character.name,
+            )
+            self.save_message(
+                "🔪➕ {character} found a weapon",
+                fmt={"character": character.name},
+                channel="public",
+                anti_channels=[character.name],
+            )
+            self.save_message(
+                "🔪➕ {character} found {weapon}",
+                fmt={"character": character.name, "weapon": weapon.name},
+                channel="debug",
+            )
 
             # Make characters kill each other
             potential_victims = [other for other in self.__characters if other != character and other.alive and other.get_action() == "run towards"]
@@ -251,10 +312,27 @@ class Game:
                 victim = random.choice(potential_victims)
                 victim.alive = False
                 victim.statistics["cause_of_death"] = "killed"
-                self.save_message("🔪💀 You managed to slain {attacked_character} ".format(attacked_character=victim.name), channel=character.name)
-                self.save_message("🔪💀 You have been slained by {attacking_character} ".format(attacking_character=character.name), channel=victim.name)
-                self.save_message("🔪💀 {attacking_character} slained {attacked_character}".format(attacking_character=character.name, attacked_character=victim.name), channel="public", anti_channels=[character.name, victim.name])
-                self.save_message("🔪💀 {attacking_character} slained {attacked_character}".format(attacking_character=character.name, attacked_character=victim.name), channel="debug")
+                self.save_message(
+                    "🔪💀 You managed to slain {attacked_character}",
+                    fmt={"attacked_character": victim.name},
+                    channel=character.name,
+                )
+                self.save_message(
+                    "🔪💀 You have been slained by {attacking_character}",
+                    fmt={"attacking_character": character.name},
+                    channel=victim.name,
+                )
+                self.save_message(
+                    "🔪💀 {attacking_character} slained {attacked_character}",
+                    fmt={"attacking_character": character.name, "attacked_character": victim.name},
+                    channel="public",
+                    anti_channels=[character.name, victim.name],
+                )
+                self.save_message(
+                    "🔪💀 {attacking_character} slained {attacked_character}",
+                    fmt={"attacking_character": character.name, "attacked_character": victim.name},
+                    channel="debug",
+                )
                 for channel in [c.name for c in self.get_alive_characters() if c != victim]:
                     self.save_message("💀💀 A tribute has fallen", channel=channel)
 
@@ -266,17 +344,43 @@ class Game:
             if len(potential_attackers) == 0:
                 break
             attacker: Character = random.choice(potential_attackers)
-            self.save_message("🔪🤕 You have been hurt by {attacker} during your escape".format(attacker=attacker.name), channel=attacked.name)
-            self.save_message("🔪🤕 {attacked} was hurt during their escape".format(attacked=attacked.name), channel="public", anti_channels=[attacked.name])
-            self.save_message("🔪🤕 {attacker} hurt {attacked} during their escape".format(attacker=attacker.name, attacked=attacked.name), channel="debug")
+            self.save_message(
+                "🔪🤕 You have been hurt by {attacker} during your escape",
+                fmt={"attacker": attacker.name},
+                channel=attacked.name,
+            )
+            self.save_message(
+                "🔪🤕 {attacked} was hurt during their escape",
+                fmt={"attacked": attacked.name},
+                channel="public",
+                anti_channels=[attacked.name],
+            )
+            self.save_message(
+                "🔪🤕 {attacker} hurt {attacked} during their escape",
+                fmt={"attacker": attacker.name, "attacked": attacked.name},
+                channel="debug",
+            )
             attacker.attack(attacked)
 
         # All characters that try to escape are able to flee
         for character in fleeing_characters + trapped_characters:
             if not character.alive:
                 continue
-            self.save_message("💨🌳 You fled far into the forest", channel=character.name)
-            self.save_message("💨🌳 {character} fled far into the forest".format(character=character.name), channel="public", anti_channels=[character.name])
+            self.save_message(
+                "💨🌳 You fled far into the forest",
+                channel=character.name,
+            )
+            self.save_message(
+                "💨🌳 {character} fled far into the forest",
+                fmt={"character": character.name},
+                channel="public",
+                anti_channels=[character.name],
+            )
+            self.save_message(
+                "💨🌳 {character} fled far into the forest",
+                fmt={"character": character.name},
+                channel="debug",
+            )
             character.move(random.choice(["go north", "go south", "go west", "go east"]))
         
 
@@ -302,8 +406,16 @@ class Game:
             static_characters_in_same_cell = [character for character in characters_in_same_cell if character in static_characters]
             if len(static_characters_in_same_cell) > 0:
                 character.current_spotted_characters = len(static_characters_in_same_cell)
-                self.save_message("👀👀 You spotted {characters} nearby".format(characters=smart_join([p.name for p in static_characters_in_same_cell], sep=", ", last_sep=" and ")), channel=character.name)
-                self.save_message("👀👀 {character} spoted {characters} nearby".format(character=character.name, characters=smart_join([p.name for p in static_characters_in_same_cell], sep=", ", last_sep=" and ")), channel="debug")
+                self.save_message(
+                    "👀👀 You spotted {characters} nearby",
+                    fmt={"characters": smart_join([p.name for p in static_characters_in_same_cell], sep=", ", last_sep=" and ")},
+                    channel=character.name,
+                )
+                self.save_message(
+                    "👀👀 {character} spoted {characters} nearby",
+                    fmt={"characters": smart_join([p.name for p in static_characters_in_same_cell], sep=", ", last_sep=" and "), "character": character.name},
+                    channel="debug",
+                )
 
 
     def __get_cells_in_region(self, region: Literal["north", "south", "east", "west"]) -> List[Tuple[int, int]]:
@@ -376,14 +488,22 @@ class Game:
                 
             region_weights[region] = zone_weight
             self.save_message(
-                "🔥🔥 Region {region} has {total_characters_in_hazard_zone} characters with an average hype of {average_hype:.2f} (weight = {zone_weight:.2f})"
-                .format(region=region, total_characters_in_hazard_zone=total_characters_in_region, average_hype=average_hype, zone_weight=zone_weight),
+                "🔥🔥 Region {region} has {total_characters_in_hazard_zone} characters with an average hype of {average_hype:.2f} (weight = {zone_weight:.2f})",
+                fmt={
+                    "region": region,
+                    "total_characters_in_hazard_zone": total_characters_in_region,
+                    "average_hype": average_hype,
+                    "zone_weight": zone_weight,
+                },
                 channel="debug",
             )
         
         # Abort if no valid hazard zone is found
         if sum(list(region_weights.values())) == 0:
-            self.save_message("🔥🔥 No valid hazard zone found", channel="debug")
+            self.save_message(
+                "🔥🔥 No valid hazard zone found",
+                channel="debug",
+            )
             return None
         
         # Return a random region based on the weights
@@ -391,7 +511,11 @@ class Game:
             list(region_weights.keys()),
             list(region_weights.values()),
         )[0]
-        self.save_message("🔥🔥 Chosen hazard zone: {chosen_region}".format(chosen_region=chosen_region), channel="debug")
+        self.save_message(
+            "🔥🔥 Chosen hazard zone: {chosen_region}",
+            fmt={"chosen_region": chosen_region},
+            channel="debug",
+        )
         return chosen_region
 
 
@@ -422,8 +546,15 @@ class Game:
                         attacked = random.choice(potential_victims)
                         attacks[attacker] = attacked
                     else:
-                        self.save_message("🔪❌ You found nobody nearby", channel=attacker.name)
-                        self.save_message("🔪❌ {attacker} found no one to attack".format(attacker=attacker.name), channel="debug")
+                        self.save_message(
+                            "🔪❌ You found nobody nearby",
+                            channel=attacker.name,
+                        )
+                        self.save_message(
+                            "🔪❌ {attacker} found no one to attack",
+                            fmt={"attacker": attacker.name},
+                            channel="debug",
+                        )
 
 
             # Start with non hunting characters
@@ -459,16 +590,35 @@ class Game:
 
                     # If the attack failed
                     else:
-                        self.save_message("🔪❌ You tried to attack {attacked}, but they escaped your assault".format(attacked=attacked.name), channel=attacker.name)
-                        self.save_message("🔪❌ {attacker} tried to attack you, but you barely escaped".format(attacker=attacker.name), channel=attacked.name)
-                        self.save_message("🔪❌ {attacker} tried to attack {attacked}, but they escaped".format(attacker=attacker.name, attacked=attacked.name), channel="debug")
+                        self.save_message(
+                            "🔪❌ You tried to attack {attacked}, but they escaped your assault",
+                            fmt={"attacked": attacked.name},
+                            channel=attacker.name,
+                        )
+                        self.save_message(
+                            "🔪❌ {attacker} tried to attack you, but you barely escaped",
+                            fmt={"attacker": attacker.name},
+                            channel=attacked.name,
+                        )
+                        self.save_message(
+                            "🔪❌ {attacker} tried to attack {attacked}, but they escaped",
+                            fmt={"attacker": attacker.name, "attacked": attacked.name},
+                            channel="debug",
+                        )
                 
                 # If one of the characters is dead during the resolve, skip.
                 # More precisely: if the attacked died (and thus if the
                 # attacker is still alive), simply state that nobody was found.
                 elif attacker.alive:
-                    self.save_message("🔪❌ You found nobody nearby", channel=attacker.name)
-                    self.save_message("🔪❌ {attacker} wanted to attack {attacked}, but they died in the meantime".format(attacker=attacker.name, attacked=attacked.name), channel="debug")
+                    self.save_message(
+                        "🔪❌ You found nobody nearby",
+                        channel=attacker.name,
+                    )
+                    self.save_message(
+                        "🔪❌ {attacker} wanted to attack {attacked}, but they died in the meantime",
+                        fmt={"attacker": attacker.name, "attacked": attacked.name},
+                        channel="debug",
+                    )
                 
                 # If the attacker died, simply skip.
                 else:
@@ -478,8 +628,15 @@ class Game:
             # will not be able to rest
             for attacked in characters:
                 if attacked.get_action() == "rest" and attacked in attacks.values() and attacked.alive:
-                    self.save_message("🛌🔪 Because of the assault, you couldn't get a wink of sleep", channel=attacked.name)
-                    self.save_message("🛌🔪 {attacked} couldn't rest because of the assault".format(attacked=attacked.name), channel="debug")
+                    self.save_message(
+                        "🛌🔪 Because of the assault, you couldn't get a wink of sleep",
+                        channel=attacked.name,
+                    )
+                    self.save_message(
+                        "🛌🔪 {attacked} couldn't rest because of the assault",
+                        fmt={"attacked": attacked.name},
+                        channel="debug",
+                    )
     
     
     def __resolve_hazard(self, hazard_region: Literal["north", "south", "east", "west"]) -> None:
@@ -494,7 +651,7 @@ class Game:
 
         for character in characters_in_hazard_region:
             self.save_message("🔥🔥 A deadly event is occuring", channel=character.name)
-        # self.save_message("🔥🔥 Deadly zone is occuring {hazard_region}".format(hazard_region=hazard_region), channel="debug")
+            self.save_message("🔥🔥 Deadly zone is occuring {hazard_region}", fmt={"hazard_region": hazard_region}, channel="debug")
         # TODO: put the following back
         # self.save_message(f"🔥🔥 {len(characters_in_hazard_zone)} trapped characters: {', '.join([c.name for c in total_characters_in_hazard_zone])}", channel="debug")
 
@@ -510,8 +667,16 @@ class Game:
             if character.position[1] < TERRAIN_RADIUS:
                 potential_directions.append("go north")
             direction = random.choice(potential_directions)
-            self.save_message("🔥🔥 You tried fleeing to the {direction}".format(direction=direction.replace("go ", "")), channel=character.name)
-            self.save_message("🔥🔥 {character} tried fleeing to the {direction}".format(character=character.name, direction=direction.replace("go ", "")), channel="debug")
+            self.save_message(
+                "🔥🔥 You tried fleeing to the {direction}",
+                fmt={"direction": direction.replace("go ", "")},
+                channel=character.name,
+            )
+            self.save_message(
+                "🔥🔥 {character} tried fleeing to the {direction}",
+                fmt={"character": character.name, "direction": direction.replace("go ", "")},
+                channel="debug",
+            )
             character.move(direction, silent=True)
 
         # Kill characters that are still in the hazard zone
@@ -519,21 +684,55 @@ class Game:
             if character.position in self.__get_characters_in_region(hazard_region):
                 character.alive = False
                 character.statistics["cause_of_death"] = "hazard"
-                self.save_message("💀🔥 You did not manage to escape the danger", channel=character.name)
-                self.save_message("💀💀 {character} died".format(character=character.name), channel="public", anti_channels=[character.name])
-                self.save_message("💀🔥 {character} did not manage to escape the danger".format(character=character.name), channel="debug")
+                self.save_message(
+                    "💀🔥 You did not manage to escape the danger",
+                    channel=character.name,
+                )
+                self.save_message(
+                    "💀💀 {character} died",
+                    fmt={"character": character.name},
+                    channel="public",
+                    anti_channels=[character.name]
+                )
+                self.save_message(
+                    "💀🔥 {character} did not manage to escape the danger",
+                    fmt={"character": character.name},
+                    channel="debug"
+                )
                 for channel in [c.name for c in self.__characters if c != character]:
-                    self.save_message("💀💀 A tribute has fallen", channel=channel)
+                    self.save_message(
+                        "💀💀 A tribute has fallen",
+                        channel=channel,
+                    )
             else:
                 if random_bool(1-EVENT_FLEE_PROBABILITY):
                     character.alive = False
                     character.statistics["cause_of_death"] = "hazard"
-                    self.save_message("💀🔥 You stumbled trying to escape the danger", channel=character.name)
-                    self.save_message("💀💀 {character} died".format(character=character.name), channel="public", anti_channels=[character.name])
-                    self.save_message("💀🔥 {character} stumbled trying to escape the danger.".format(character=character.name), channel="debug")
+                    self.save_message(
+                        "💀🔥 You stumbled trying to escape the danger",
+                        channel=character.name,
+                    )
+                    self.save_message(
+                        "💀💀 {character} died",
+                        fmt={"character": character.name},
+                        channel="public",
+                        anti_channels=[character.name],
+                    )
+                    self.save_message(
+                        "💀🔥 {character} stumbled trying to escape the danger",
+                        fmt={"character": character.name},
+                        channel="debug",
+                    )
                 else:
-                    self.save_message("🔥✅ You barely escaped the hazard zone", channel=character.name)
-                    self.save_message("🔥✅ {character} barely escaped the hazard zone".format(character=character.name), channel="debug")
+                    self.save_message(
+                        "🔥✅ You barely escaped the hazard zone",
+                        channel=character.name,
+                    )
+                    self.save_message(
+                        "🔥✅ {character} barely escaped the hazard zone",
+                        fmt={"character": character.name},
+                        channel="debug",
+                    )
     
     
     def __show_time_and_day(self) -> str:
@@ -544,10 +743,20 @@ class Game:
             prefix = ""
         if self.time == "day":
             for channel in ["public", "debug"] + [c.name for c in self.__characters]:
-                self.save_message("🌞🌞 {prefix}Day {day}".format(prefix=prefix, day=self.day), channel=channel, emphasis=True)
+                self.save_message(
+                    "🌞🌞 {prefix}Day {day}",
+                    fmt={"prefix": prefix, "day": self.day},
+                    channel=channel,
+                    emphasis=True,
+                )
         else:
             for channel in ["public", "debug"] + [c.name for c in self.__characters]:
-                self.save_message("🌙🌙 {prefix}Night {day}".format(prefix=prefix, day=self.day), channel=channel, emphasis=True)
+                self.save_message(
+                    "🌙🌙 {prefix}Night {day}",
+                    fmt={"prefix": prefix, "day": self.day},
+                    channel=channel,
+                    emphasis=True,
+                )
 
 
     def __pass_time(self):
@@ -581,7 +790,11 @@ class Game:
                 if len(new_deaths) > 0:
                     self.save_message("💀🫡 The fallen:", channel=channel, emphasis=True)
                     for character in new_deaths:
-                        self.save_message("- {character}".format(character=character.name), channel=channel)
+                        self.save_message(
+                            "- {character}",
+                            fmt={"character": character.name},
+                            channel=channel,
+                        )
                         self.__announced_dead_characters.append(character)
 
             # Announce the remaining tributes
@@ -589,6 +802,15 @@ class Game:
                 if channel == "debug":
                     self.save_message("⚔️⚔️ The standing:", channel="debug", emphasis=True)
                     for character in self.get_alive_characters():
-                        self.save_message("- {character}".format(character=character.name), channel="debug")
+                        self.save_message(
+                            "- {character}",
+                            fmt={"character": character.name},
+                            channel="debug",
+                        )
                 else:
-                    self.save_message("⚔️⚔️ {number} tributes remain standing".format(number=len(self.get_alive_characters())), channel=channel, emphasis=True)
+                    self.save_message(
+                        "⚔️⚔️ {number} tributes remain standing",
+                        fmt={"number": len(self.get_alive_characters())},
+                        channel=channel,
+                        emphasis=True,
+                    )
