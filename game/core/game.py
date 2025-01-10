@@ -651,7 +651,7 @@ class Game:
 
         for character in characters_in_hazard_region:
             self.save_message("🔥🔥 A deadly event is occuring", channel=character.name)
-            self.save_message("🔥🔥 Deadly zone is occuring {hazard_region}", fmt={"hazard_region": hazard_region}, channel="debug")
+        self.save_message("🔥🔥 Deadly zone is occuring {hazard_region}", fmt={"hazard_region": hazard_region}, channel="debug")
         # TODO: put the following back
         # self.save_message(f"🔥🔥 {len(characters_in_hazard_zone)} trapped characters: {', '.join([c.name for c in total_characters_in_hazard_zone])}", channel="debug")
 
