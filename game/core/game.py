@@ -313,24 +313,24 @@ class Game:
                 victim.alive = False
                 victim.statistics["cause_of_death"] = "killed"
                 self.save_message(
-                    "🔪💀 You managed to slain {attacked_character}",
-                    fmt={"attacked_character": victim.name},
+                    "🔪💀 You managed to slain {attacked}",
+                    fmt={"attacked": victim.name},
                     channel=character.name,
                 )
                 self.save_message(
-                    "🔪💀 You have been slained by {attacking_character}",
-                    fmt={"attacking_character": character.name},
+                    "🔪💀 You have been slained by {attacker}",
+                    fmt={"attacker": character.name},
                     channel=victim.name,
                 )
                 self.save_message(
-                    "🔪💀 {attacking_character} slained {attacked_character}",
-                    fmt={"attacking_character": character.name, "attacked_character": victim.name},
+                    "🔪💀 {attacker} slained {attacked}",
+                    fmt={"attacker": character.name, "attacked": victim.name},
                     channel="public",
                     anti_channels=[character.name, victim.name],
                 )
                 self.save_message(
-                    "🔪💀 {attacking_character} slained {attacked_character}",
-                    fmt={"attacking_character": character.name, "attacked_character": victim.name},
+                    "🔪💀 {attacker} slained {attacked}",
+                    fmt={"attacker": character.name, "attacked": victim.name},
                     channel="debug",
                 )
                 for channel in [c.name for c in self.get_alive_characters() if c != victim]:

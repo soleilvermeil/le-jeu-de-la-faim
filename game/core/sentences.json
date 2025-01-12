@@ -3,11 +3,11 @@
         "🔪➕ {character} managed to get {weapon}",
         "🔪➕ {character} rushed at {weapon}"
     ],
-    "🔪💀 {attacking_character} slained {attacked_character}": [
-        "🔪💀 {attacking_character} killed {attacked_character}",
-        "🔪💀 {attacking_character} left {attacked_character} no chance",
-        "🔪💀 {attacking_character} immediately killed {attacked_character}",
-        "🔪💀 {attacking_character} destroyed {attacked_character}"
+    "🔪💀 {attacker} slained {attacked}": [
+        "🔪💀 {attacker} killed {attacked}",
+        "🔪💀 {attacker} left {attacked} no chance",
+        "🔪💀 {attacker} immediately killed {attacked}",
+        "🔪💀 {attacker} destroyed {attacked}"
     ],
     "💨🌳 {character} fled far into the forest": [
         "💨🌳 {character} ran away into the forest",
@@ -82,5 +82,4 @@
         "🔥✅ {character} narrowly avoided disaster, escaping just in time",
         "🔥✅ {character} rushed to safety, escaping the hazard zone with barely a second to spare"
     ]
-
 }
