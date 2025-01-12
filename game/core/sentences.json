@@ -69,7 +69,9 @@
         "🔥🔥 A blazing wildfire erupts to the {hazard_region}, consuming everything in its path",
         "🔥🔥 The ground trembles violently to the {hazard_region} as a sudden earthquake tears through the terrain",
         "🔥🔥 Acidic rain begins to pour in the {hazard_region}",
-        "🔥🔥 A barrage of bombs rains down on the {hazard_region}"
+        "🔥🔥 A barrage of bombs rains down on the {hazard_region}",
+        "🔥🔥 A corrosive gas cloud spreads through the {hazard_region}, dissolving everything in its path",
+        "🔥🔥 A tiny black hole appeared in the {hazard_region}, ripping away all the matter around it."
     ],
     "💀🔥 {character} did not manage to escape the danger": [
         "💀🔥 {character} couldn’t outrun the danger, falling victim to the threat",
@@ -81,5 +83,6 @@
     "🔥✅ {character} barely escaped the hazard zone": [
         "🔥✅ {character} narrowly avoided disaster, escaping just in time",
         "🔥✅ {character} rushed to safety, escaping the hazard zone with barely a second to spare"
-    ]
+    ],
+    "🔪❌ {attacker} found no one to attack": []
 }
