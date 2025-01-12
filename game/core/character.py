@@ -467,7 +467,7 @@ class Character:
                     delta_health = GIFT_HEALTH
                     self.health = min(self.health + delta_health, MAX_HEALTH)
                     self.__game.save_message("🎁💊 You received some medecine from an unknown sponsor", channel=self.name)
-                    self.__game.save_message("🎁💊 {character}'s health was restored by {health} thanks to an unknown sponsor".format(character=self.name, health=delta_health), channel="debug")
+                    self.__game.save_message("🎁💊 {character}'s health was restored by {health} thanks to medecine sent by the unknown sponsor".format(character=self.name, health=delta_health), channel="debug")
                 if gift == "weapon":
                     weapon_tuple: tuple = random.choice(WEAPONS)
                     weapon: Weapon = Weapon(name=weapon_tuple[0], damage=weapon_tuple[1])
