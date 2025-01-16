@@ -7,6 +7,10 @@ class BaseAgent:
         self.name = name
         self.current_state = None
         
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(name={self.name})"
+    
         
     def messages2str(self, messages: List[str]) -> str:
         """
