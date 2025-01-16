@@ -1,15 +1,18 @@
-from typing import List, Tuple
-
-
+# Add the parent directory to the path so we can import the game module
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
+
+# Importing game module
 from game.interface import main
 from game.agents.cmd_agent import CMDAgent
 from game.agents.personality_agent import PersonalityAgent
-
-
 from game.utils import smart_input
+
+
+# Importing other modules
+from typing import List, Tuple
 
 
 if __name__ == '__main__':

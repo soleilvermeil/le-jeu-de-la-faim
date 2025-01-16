@@ -1,13 +1,18 @@
-from textwrap import dedent
-import dotenv
-
-
+# Add the parent directory to the path so we can import the game module
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
+
+# Importing game module
 from game.interface import main
 from game.agents.llm_agent import LLMAgent
 from game.agents.random_agent import RandomAgent
+
+
+# Importing other modules
+from textwrap import dedent
+import dotenv
 
 
 if __name__ == '__main__':
