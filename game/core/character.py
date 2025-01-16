@@ -109,9 +109,23 @@ class Character:
         if self.position != (x, y):
             biome = self.__game.map_.cells[(x, y)].name.replace("|", " ")
             icon = self.__game.map_.cells[(x, y)].icon
-            self.__game.save_message("🚶{icon} {character} moved from {coords1} to {coords2}, and is now {biome}".format(icon=icon, character=self.name, coords1=coords(self.position), coords2=coords(x, y), biome=biome), channel="debug")
+            self.__game.save_message(
+                "🚶{icon} {character} moved from {coords1} to {coords2}, and is now {biome}",
+                fmt={
+                    "icon": icon,
+                    "character": self.name,
+                    "coords1": coords(self.position),
+                    "coords2": coords(x, y),
+                    "biome": biome,
+                },
+                channel="debug",
+            )
         else:
-            self.__game.save_message("🚶❎ {character} decided to stay at {coords1}".format(character=self.name, coords1=coords(self.position)), channel="debug")
+            self.__game.save_message(
+                "🚶❎ {character} decided to stay at {coords1}",
+                fmt={"character": self.name, "coords1": coords(self.position)},
+                channel="debug",
+            )
         self.position = (x, y)
 
         # Update the statistics
@@ -125,7 +139,14 @@ class Character:
         if direction != "stay":
             cell = self.__game.map_.cells[self.position]
             if not silent:
-                self.__game.save_message("🚶{icon} You are now {biome}".format(icon=cell.icon, biome=cell.name.replace("|", " ")), channel=self.name)
+                self.__game.save_message(
+                    "🚶{icon} You are now {biome}",
+                    fmt={
+                        "icon": cell.icon,
+                        "biome": cell.name.replace("|", " "),
+                    },
+                    channel=self.name,
+                )
 
 
     def act(self, action: str) -> None:
