@@ -10,9 +10,6 @@ from .map import Map
 from .weapon import Weapon
 
 
-import INTENTIONAL_BAD_CODE
-
-
 class Game:
 
     def __init__(self, character_names: List[str]):

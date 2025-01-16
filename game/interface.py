@@ -169,5 +169,5 @@ def main(
         __save_txt(game_, state_history)
         
     # Save the full state history
-    if save_tsv:
-        __save_tsv(game_, state_history)
+    # if save_tsv:
+    #     __save_tsv(game_, state_history)
