@@ -60,8 +60,9 @@ class Game:
 
         # Check if there is a key equal to the message. If so, return a random
         # sentence from the list of sentences
-        if message in sentences:
-            message = random.choice(sentences[message] + [message])
+        if message in sentences and len(sentences[message]) > 0:
+            # message = random.choice(sentences[message] + [message])
+            message = random.choice(sentences[message])
 
         # Format the message
         message = message.format(**fmt)
@@ -531,17 +532,27 @@ class Game:
         for x, y in cells:
 
             # Get all characters in the cell
-            characters = self.__get_characters_in_cell((x, y))
+            characters_in_the_cell = self.__get_characters_in_cell((x, y))
 
             # If using a subset, filter the characters
             if characters_subset is not None:
-                characters = [c for c in characters if c in characters_subset]
+                characters_in_the_cell = [c for c in characters_in_the_cell if c in characters_subset]
 
             # Define random battles, useful for later
-            hunting_characters = [character for character in characters if character.get_action() == "hunt"]
+            hunting_characters = [character for character in characters_in_the_cell if character.get_action() == "hunt"]
             attacks: Dict[Character, Character] = {}
             for attacker in hunting_characters:
-                    potential_victims = [c for c in characters if c != attacker and c.get_action() != "hide"]
+                
+                    # Each person in the same cell as the attacker has a chance
+                    # to be attacked. But each potential target has a chance to
+                    # not be detected by the attacker, based on the visibility
+                    # of the cell.
+                    potential_victims = [
+                        c for c in characters_in_the_cell
+                        if c != attacker
+                        and c.get_action() != "hide"
+                        and random_bool(self.map_.cells[(x, y)].visibility_proba)
+                    ]
                     if len(potential_victims) > 0:
                         attacked = random.choice(potential_victims)
                         attacks[attacker] = attacked
@@ -558,7 +569,7 @@ class Game:
 
 
             # Start with non hunting characters
-            non_hunting_characters = [character for character in characters if character.get_action() != "hunt"]
+            non_hunting_characters = [character for character in characters_in_the_cell if character.get_action() != "hunt"]
             for character in non_hunting_characters:
 
                 # Gather
@@ -626,7 +637,7 @@ class Game:
 
             # If character had originally chosen to rest but was attacked, they
             # will not be able to rest
-            for attacked in characters:
+            for attacked in characters_in_the_cell:
                 if attacked.get_action() == "rest" and attacked in attacks.values() and attacked.alive:
                     self.save_message(
                         "🛌🔪 Because of the assault, you couldn't get a wink of sleep",
@@ -651,7 +662,11 @@ class Game:
 
         for character in characters_in_hazard_region:
             self.save_message("🔥🔥 A deadly event is occuring", channel=character.name)
-        self.save_message("🔥🔥 Deadly zone is occuring {hazard_region}", fmt={"hazard_region": hazard_region}, channel="debug")
+        self.save_message(
+            "🔥🔥 Deadly zone is occuring {hazard_region}",
+            fmt={"hazard_region": hazard_region},
+            channel="debug",
+        )
         # TODO: put the following back
         # self.save_message(f"🔥🔥 {len(characters_in_hazard_zone)} trapped characters: {', '.join([c.name for c in total_characters_in_hazard_zone])}", channel="debug")
 
