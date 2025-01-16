@@ -16,20 +16,18 @@ WEAPONS = [
     ("a trident", 5),
     ("a bow", 5),
     ("an axe", 4),
-    ("a crossbow", 4),
+    ("throwing knives", 3),
     ("a pickaxe", 3),
     ("a dagger", 3),
     ("a mace", 3),
     ("a scythe", 3),
     ("a sword", 4),
     ("a machete", 4),
-    ("a flail", 4),
     ("a spear", 3),
     ("a chain", 3),
 ]
 NATURE_WEAPONS = [
     ("a rock", 2),
-    ("a stick", 2),
     ("a branch", 2),
     ("a stone", 2),
     ("a piece of wood", 2),
@@ -38,7 +36,7 @@ WEAPON_GATHER_PROBA_WHILE_GATHERING = 0.2
 WEAPON_GATHER_PROBA_WHILE_HIDING = 0.2
 FLEE_PROBABILITY = 0.7
 NIGHT_PROBABILITY_FACTOR = 0.7
-EVENT_FLEE_PROBABILITY = 0.9
+EVENT_FLEE_PROBABILITY = 0.8
 EVENT_PROBABILITY = 0.5
 HYPE_WHEN_KILLING = 30   # in previous version : 50
 HYPE_WHEN_ATTACKING = 20 # in previous version : 30
