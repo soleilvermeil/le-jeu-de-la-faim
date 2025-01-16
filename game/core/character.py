@@ -347,6 +347,8 @@ class Character:
                 water = resources - food
                 food *= self.__game.map_.cells[self.position].food_multiplier
                 water *= self.__game.map_.cells[self.position].water_multiplier
+                food = round(food)
+                water = round(water)
                 self.bag.food += food
                 self.bag.water += water
                 if food > 0 and water > 0:
