@@ -1,6 +1,10 @@
+# Add the parent directory to the path so we can import the game module
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
+
+# Importing game module
 from game.agents.random_agent import RandomAgent
 from game.interface import main
 
