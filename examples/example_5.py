@@ -32,80 +32,8 @@ class Response(BaseModel):
 
 
 if __name__ == '__main__':
-    
-    # Define numerical values
-    HIGH = 0.8
-    UNSPECIFIED = 0.5
-    LOW = 0.2
 
-    # Define personalities
-    PERSONNALITIES = {
-        "ruthless/cold-blooded": {
-            "resilience": UNSPECIFIED,
-            "hostility": HIGH,
-        },
-        "strategic/cunning": {
-            "resilience": HIGH,
-            "hostility": UNSPECIFIED,
-        },
-        "noble/heroic": {
-            "resilience": UNSPECIFIED,
-            "hostility": LOW,
-        },
-        "terrified/timid": {
-            "resilience": HIGH,
-            "hostility": LOW,
-        },
-        "manipulative/charismatic": {
-            "resilience": UNSPECIFIED,
-            "hostility": UNSPECIFIED,
-        },
-        "unhinged/vengeful": {
-            "resilience": HIGH,
-            "hostility": HIGH,
-        }
-    }
-
-    # Define tributes
-    tributes = {
-        ( 1,   "male"): {"name": "Marvel", "personality": PERSONNALITIES["ruthless/cold-blooded"]},
-        ( 1, "female"): {"name": "Glimmer", "personality": PERSONNALITIES["manipulative/charismatic"]},
-        ( 2,   "male"): {"name": "Cato", "personality": PERSONNALITIES["ruthless/cold-blooded"]},
-        ( 2, "female"): {"name": "Clove", "personality": PERSONNALITIES["strategic/cunning"]},
-        ( 3,   "male"): {"name": None, "personality": PERSONNALITIES["strategic/cunning"]},
-        ( 3, "female"): {"name": None, "personality": PERSONNALITIES["terrified/timid"]},
-        ( 4,   "male"): {"name": None, "personality": PERSONNALITIES["ruthless/cold-blooded"]},
-        ( 4, "female"): {"name": None, "personality": PERSONNALITIES["ruthless/cold-blooded"]},
-        ( 5,   "male"): {"name": None, "personality": PERSONNALITIES["unhinged/vengeful"]},
-        ( 5, "female"): {"name": "Foxface", "personality": PERSONNALITIES["strategic/cunning"]},
-        ( 6,   "male"): {"name": None, "personality": PERSONNALITIES["terrified/timid"]},
-        ( 6, "female"): {"name": None, "personality": PERSONNALITIES["terrified/timid"]},
-        ( 7,   "male"): {"name": None, "personality": PERSONNALITIES["noble/heroic"]},
-        ( 7, "female"): {"name": None, "personality": PERSONNALITIES["terrified/timid"]},
-        ( 8,   "male"): {"name": None, "personality": PERSONNALITIES["terrified/timid"]},
-        ( 8, "female"): {"name": None, "personality": PERSONNALITIES["noble/heroic"]},
-        ( 9,   "male"): {"name": None, "personality": PERSONNALITIES["terrified/timid"]},
-        ( 9, "female"): {"name": None, "personality": PERSONNALITIES["terrified/timid"]},
-        (10,   "male"): {"name": None, "personality": PERSONNALITIES["noble/heroic"]},
-        (10, "female"): {"name": None, "personality": PERSONNALITIES["terrified/timid"]},
-        (11,   "male"): {"name": "Thresh", "personality": PERSONNALITIES["noble/heroic"]},
-        (11, "female"): {"name": "Rue", "personality": PERSONNALITIES["noble/heroic"]},
-        (12,   "male"): {"name": "Peeta", "personality": PERSONNALITIES["manipulative/charismatic"]},
-        (12, "female"): {"name": "Katniss", "personality": PERSONNALITIES["noble/heroic"]},
-    }
-
-    # Make agents list
-    agents = []
-    for (district, gender), tribute in tributes.items():
-        name = tribute["name"] or f"District {district} {gender}"
-        hostility = tribute["personality"]["hostility"]
-        resilience = tribute["personality"]["resilience"]
-        agents.append(PersonalityAgent(name, hostility=hostility, resilience=resilience))
-
-    # Run the game
-    main(agents, save_txt=True)
-
-    # Get the message
+    # Get the last game
     file = sorted(glob.glob("logs/*.txt"))[-1]
     blocks: List[str] = []
     with open(file, "r", encoding="utf8") as f:
@@ -162,15 +90,19 @@ if __name__ == '__main__':
 
     # Define a file to write the output
     new_file = os.path.basename(file).replace(".txt", "_commented.txt")
-    f = open(new_file, "a", encoding="utf8")
+    f = open(os.path.join("logs", new_file), "a", encoding="utf8")
 
     # Add blocks
     for block in blocks:
+
+        # Print to console
+        print(block.split("\n")[0])
+
         messages.append({
             "role": "user",
             "content": block,
         })
-        completion = client.beta.chat.completions.parse(model="gpt-4o-mini", messages=messages, response_format=Response)
+        completion = client.beta.chat.completions.parse(model="gpt-4o", messages=messages, response_format=Response)
         response = completion.choices[0].message.parsed
         
         # Print the block

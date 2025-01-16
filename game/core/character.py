@@ -109,9 +109,23 @@ class Character:
         if self.position != (x, y):
             biome = self.__game.map_.cells[(x, y)].name.replace("|", " ")
             icon = self.__game.map_.cells[(x, y)].icon
-            self.__game.save_message("🚶{icon} {character} moved from {coords1} to {coords2}, and is now {biome}".format(icon=icon, character=self.name, coords1=coords(self.position), coords2=coords(x, y), biome=biome), channel="debug")
+            self.__game.save_message(
+                "🚶{icon} {character} moved from {coords1} to {coords2}, and is now {biome}",
+                fmt={
+                    "icon": icon,
+                    "character": self.name,
+                    "coords1": coords(self.position),
+                    "coords2": coords(x, y),
+                    "biome": biome,
+                },
+                channel="debug",
+            )
         else:
-            self.__game.save_message("🚶❎ {character} decided to stay at {coords1}".format(character=self.name, coords1=coords(self.position)), channel="debug")
+            self.__game.save_message(
+                "🚶❎ {character} decided to stay at {coords1}",
+                fmt={"character": self.name, "coords1": coords(self.position)},
+                channel="debug",
+            )
         self.position = (x, y)
 
         # Update the statistics
@@ -125,7 +139,14 @@ class Character:
         if direction != "stay":
             cell = self.__game.map_.cells[self.position]
             if not silent:
-                self.__game.save_message("🚶{icon} You are now {biome}".format(icon=cell.icon, biome=cell.name.replace("|", " ")), channel=self.name)
+                self.__game.save_message(
+                    "🚶{icon} You are now {biome}",
+                    fmt={
+                        "icon": cell.icon,
+                        "biome": cell.name.replace("|", " "),
+                    },
+                    channel=self.name,
+                )
 
 
     def act(self, action: str) -> None:
@@ -134,37 +155,37 @@ class Character:
         # character's channel if it is
         if action == "hunt":
             self.__game.save_message("🔪🔪 You decided to hunt...", channel=self.name, emphasis=True)
-            self.__game.save_message("🔪🔪 {character} decided to hunt...".format(character=self.name), channel="debug")
+            self.__game.save_message("🔪🔪 {character} decided to hunt...", fmt={"character": self.name}, channel="debug")
         elif action == "gather":
             self.__game.save_message("🌾🌾 You decided to gather resources...", channel=self.name, emphasis=True)
-            self.__game.save_message("🌾🌾 {character} decided to gather resources...".format(character=self.name), channel="debug")
+            self.__game.save_message("🌾🌾 {character} decided to gather resources...", fmt={"character": self.name}, channel="debug")
         elif action == "hide":
             self.__game.save_message("👻👻 You decided to hide...", channel=self.name, emphasis=True)
-            self.__game.save_message("👻👻 {character} decided to hide...".format(character=self.name), channel="debug")
+            self.__game.save_message("👻👻 {character} decided to hide...", fmt={"character": self.name}, channel="debug")
         elif action == "rest":
             self.__game.save_message("🛌🛌 You decided to rest...", channel=self.name, emphasis=True)
-            self.__game.save_message("🛌🛌 {character} decided to rest...".format(character=self.name), channel="debug")
+            self.__game.save_message("🛌🛌 {character} decided to rest...", fmt={"character": self.name}, channel="debug")
         elif action == "run away":
             self.__game.save_message("🔪🌲 You decided to run away from the cornucopia...", channel=self.name, emphasis=True)
-            self.__game.save_message("🔪🌲 {character} decided to run away from the cornucopia...".format(character=self.name), channel="debug")
+            self.__game.save_message("🔪🌲 {character} decided to run away from the cornucopia...", fmt={"character": self.name}, channel="debug")
         elif action == "run towards":
             self.__game.save_message("🔪🩸 You decided to run towards the cornucopia...", channel=self.name, emphasis=True)
-            self.__game.save_message("🔪🩸 {character} decided to run towards the cornucopia...".format(character=self.name), channel="debug")
+            self.__game.save_message("🔪🩸 {character} decided to run towards the cornucopia...", fmt={"character": self.name}, channel="debug")
         elif action == "go north":
             self.__game.save_message("🚶⬆️ You decided to go north...", channel=self.name, emphasis=True)
-            self.__game.save_message("🚶⬆️ {character} decided to go north...".format(character=self.name), channel="debug")
+            self.__game.save_message("🚶⬆️ {character} decided to go north...", fmt={"character": self.name}, channel="debug")
         elif action == "go south":
             self.__game.save_message("🚶⬇️ You decided to go south...", channel=self.name, emphasis=True)
-            self.__game.save_message("🚶⬇️ {character} decided to go south...".format(character=self.name), channel="debug")
+            self.__game.save_message("🚶⬇️ {character} decided to go south...", fmt={"character": self.name}, channel="debug")
         elif action == "go west":
             self.__game.save_message("🚶⬅️ You decided to go west...", channel=self.name, emphasis=True)
-            self.__game.save_message("🚶⬅️ {character} decided to go west...".format(character=self.name), channel="debug")
+            self.__game.save_message("🚶⬅️ {character} decided to go west...", fmt={"character": self.name}, channel="debug")
         elif action == "go east":
             self.__game.save_message("🚶➡️ You decided to go east...", channel=self.name, emphasis=True)
-            self.__game.save_message("🚶➡️ {character} decided to go east...".format(character=self.name), channel="debug")
+            self.__game.save_message("🚶➡️ {character} decided to go east...", fmt={"character": self.name}, channel="debug")
         elif action == "stay":
             self.__game.save_message("🚶❎ You decided to stay...", channel=self.name, emphasis=True)
-            self.__game.save_message("🚶❎ {character} decided to stay...".format(character=self.name), channel="debug")
+            self.__game.save_message("🚶❎ {character} decided to stay...", fmt={"character": self.name}, channel="debug")
         else:
             raise ValueError(f"Unknown action: {action}")
         
@@ -253,9 +274,21 @@ class Character:
         else:
             raise ValueError(f"Characters should not be able to be attacked while doing '{self.__current_action}'")
         self.health = max(self.health - damage, 0)
-        self.__game.save_message("🔪🤕 {attacking_character} inflicted you {damage} damage ({current_health}/{max_health} HP left)".format(attacking_character=other.name, damage=damage, current_health=self.health, max_health=MAX_HEALTH), channel=self.name)
-        self.__game.save_message("🔪🤕 You inflicted {damage} damage to {attacked_character}".format(attacked_character=self.name, damage=damage), channel=other.name)
-        self.__game.save_message("🔪🤕 {attacked_character} took {damage} damage ({current_health}/{max_health} HP left)".format(attacked_character=self.name, damage=damage, current_health=self.health, max_health=MAX_HEALTH), channel="debug")
+        self.__game.save_message(
+            "🔪🤕 {attacking_character} inflicted you {damage} damage ({current_health}/{max_health} HP left)",
+            fmt={"attacking_character": other.name, "damage": damage, "current_health": self.health, "max_health": MAX_HEALTH},
+            channel=self.name,
+        )
+        self.__game.save_message(
+            "🔪🤕 You inflicted {damage} damage to {attacked_character}",
+            fmt={"attacked_character": self.name, "damage": damage},
+            channel=other.name,
+        )
+        self.__game.save_message(
+            "🔪🤕 {attacked_character} took {damage} damage ({current_health}/{max_health} HP left)",
+            fmt={"attacked_character": self.name, "damage": damage, "current_health": self.health, "max_health": MAX_HEALTH},
+            channel="debug",
+        )
 
         # Check if dead
         if self.health <= 0:
@@ -277,9 +310,21 @@ class Character:
         Attack another character.
         """
         # Print the attack messages to the corresponding channels
-        self.__game.save_message("🔪😈 You have attacked {attacked_character} with {weapon}".format(attacked_character=other.name, weapon=self.get_best_weapon().name), channel=self.name)
-        self.__game.save_message("🔪😈 You have been attacked by {attacking_character} with {weapon}".format(attacking_character=self.name, weapon=self.get_best_weapon().name), channel=other.name)
-        self.__game.save_message("🔪😈 {attacking_character} attacked {attacked_character} with {weapon}".format(attacking_character=self.name, attacked_character=other.name, weapon=self.get_best_weapon().name), channel="debug")
+        self.__game.save_message(
+            "🔪😈 You have attacked {attacked} with {weapon}",
+            fmt={"attacked": other.name, "weapon": self.get_best_weapon().name},
+            channel=self.name,
+        )
+        self.__game.save_message(
+            "🔪😈 You have been attacked by {attacking} with {weapon}",
+            fmt={"attacking": self.name, "weapon": self.get_best_weapon().name},
+            channel=other.name,
+        )
+        self.__game.save_message(
+            "🔪😈 {attacking} attacked {attacked} with {weapon}",
+            fmt={"attacking": self.name, "attacked": other.name, "weapon": self.get_best_weapon().name},
+            channel="debug",
+        )
 
         # Call the `__be_attacked` method of the other character
         other.__be_attacked(self)
@@ -323,6 +368,8 @@ class Character:
                 water = resources - food
                 food *= self.__game.map_.cells[self.position].food_multiplier
                 water *= self.__game.map_.cells[self.position].water_multiplier
+                food = round(food)
+                water = round(water)
                 self.bag.food += food
                 self.bag.water += water
                 if food > 0 and water > 0:
@@ -373,24 +420,24 @@ class Character:
                 food *= self.__game.map_.cells[self.position].food_multiplier
                 water *= self.__game.map_.cells[self.position].water_multiplier
                 if food > 0 and water > 0:
-                    self.__game.save_message("👻🍒 You found some food while hiding ", channel=self.name)
+                    self.__game.save_message("👻🍒 You found some food while hiding", channel=self.name)
                 elif food > 0 and water == 0:
-                    self.__game.save_message("👻💧 You found some water while hiding ", channel=self.name)
+                    self.__game.save_message("👻💧 You found some water while hiding", channel=self.name)
                 elif food == 0 and water > 0:
-                    self.__game.save_message("👻🌾 You found some food and water while hiding ", channel=self.name)
-                self.__game.save_message("👻✅ {character} found {food} food and {water} water while hiding ".format(character=self.name, food=food, water=water), channel="debug")
+                    self.__game.save_message("👻🌾 You found some food and water while hiding", channel=self.name)
+                self.__game.save_message("👻✅ {character} found {food} food and {water} water while hiding".format(character=self.name, food=food, water=water), channel="debug")
 
             # If a weapon is found instead
             else:
                 weapon_tuple: tuple = random.choice(NATURE_WEAPONS)
                 weapon: Weapon = Weapon(name=weapon_tuple[0], damage=weapon_tuple[1])
                 self.bag.add_weapon(weapon)
-                self.__game.save_message("👻🔪 You found {weapon} while hiding ".format(weapon=weapon.name), channel=self.name)
-                self.__game.save_message("👻🔪 {character} found {weapon} while hiding ".format(character=self.name, weapon=weapon.name), channel="debug")
+                self.__game.save_message("👻🔪 You found {weapon} while hiding".format(weapon=weapon.name), channel=self.name)
+                self.__game.save_message("👻🔪 {character} found {weapon} while hiding".format(character=self.name, weapon=weapon.name), channel="debug")
 
         # If the character found nothing
         else:
-            self.__game.save_message("👻❌ {character} didn't find anything while hiding ".format(character=self.name), channel="debug")
+            self.__game.save_message("👻❌ {character} didn't find anything while hiding".format(character=self.name), channel="debug")
         
         # Change the hype
         self.change_hype(HYPE_WHEN_HIDING)
@@ -412,8 +459,8 @@ class Character:
 
         # Hype: Each turn, a character might receive a gift if their hype is high enough
         if random_bool(self.hype / MAX_HYPE):
-            self.__game.save_message("🎁🎉 An unknown sponsor sent a gift to {character} ".format(character=self.name), channel="public")
-            self.__game.save_message("🎁🎉 An unknown sponsor sent a gift to {character} (proba = {proba:.0%}) ".format(character=self.name, proba=self.hype / MAX_HYPE), channel="debug")
+            self.__game.save_message("🎁🎉 An unknown sponsor sent a gift to {character}".format(character=self.name), channel="public")
+            self.__game.save_message("🎁🎉 An unknown sponsor sent a gift to {character} (proba = {proba:.0%})".format(character=self.name, proba=self.hype / MAX_HYPE), channel="debug")
             potential_gift = []
             if self.bag.water == 0 and self.thirst < MAX_THIRST:
                 potential_gift.append("water")
@@ -432,29 +479,29 @@ class Character:
                 if gift == "water":
                     delta_water = GIFT_WATER
                     self.bag.water += delta_water
-                    self.__game.save_message("🎁💧 You received some water from an unknown sponsor ", channel=self.name)
-                    self.__game.save_message("🎁💧 {character} received {water} water from an unknown sponsor ".format(character=self.name, water=delta_water), channel="debug")
+                    self.__game.save_message("🎁💧 You received some water from an unknown sponsor", channel=self.name)
+                    self.__game.save_message("🎁💧 {character} received {water} water from an unknown sponsor".format(character=self.name, water=delta_water), channel="debug")
                 if gift == "food":
                     delta_food = GIFT_FOOD
                     self.bag.food += delta_food
-                    self.__game.save_message("🎁🍒 You received some food from an unknown sponsor ", channel=self.name)
-                    self.__game.save_message("🎁🍒 {character} received {food} food from an unknown sponsor ".format(character=self.name, food=delta_food), channel="debug")
+                    self.__game.save_message("🎁🍒 You received some food from an unknown sponsor", channel=self.name)
+                    self.__game.save_message("🎁🍒 {character} received {food} food from an unknown sponsor".format(character=self.name, food=delta_food), channel="debug")
                 if gift == "medecine":
                     delta_health = GIFT_HEALTH
                     self.health = min(self.health + delta_health, MAX_HEALTH)
-                    self.__game.save_message("🎁💊 You received some medecine from an unknown sponsor ", channel=self.name)
-                    self.__game.save_message("🎁💊 {character}'s health was restored by {health} thanks to an unknown sponsor ".format(character=self.name, health=delta_health), channel="debug")
+                    self.__game.save_message("🎁💊 You received some medecine from an unknown sponsor", channel=self.name)
+                    self.__game.save_message("🎁💊 {character}'s health was restored by {health} thanks to medecine sent by the unknown sponsor".format(character=self.name, health=delta_health), channel="debug")
                 if gift == "weapon":
                     weapon_tuple: tuple = random.choice(WEAPONS)
                     weapon: Weapon = Weapon(name=weapon_tuple[0], damage=weapon_tuple[1])
                     self.bag.add_weapon(weapon)
-                    self.__game.save_message("🎁🔪 You received {weapon} from an unknown sponsor ".format(weapon=weapon.name), channel=self.name)
-                    self.__game.save_message("🎁🔪 {character} received {weapon} from an unknown sponsor ".format(character=self.name, weapon=weapon.name), channel="debug")
+                    self.__game.save_message("🎁🔪 You received {weapon} from an unknown sponsor".format(weapon=weapon.name), channel=self.name)
+                    self.__game.save_message("🎁🔪 {character} received {weapon} from an unknown sponsor".format(character=self.name, weapon=weapon.name), channel="debug")
 
                 # The gift also restores some mental
                 if self.mental < MAX_MENTAL:
                     self.mental += 1
-                    self.__game.save_message("🎁❤️‍🩹 The gift made you feel a bit happier ", channel=self.name)
+                    self.__game.save_message("🎁❤️‍🩹 The gift made you feel a bit happier", channel=self.name)
                     self.__game.save_message("🎁❤️‍🩹 {character} feels a bit happier thanks to the gift".format(character=self.name), channel="debug")
 
                 # Update statistics
@@ -462,8 +509,8 @@ class Character:
 
             # If the character has no need for a gift, the drone crashes
             else:
-                self.__game.save_message("🎁❌ The drone sending your gift crashed in a tree and has been destroyed ", channel=self.name)
-                self.__game.save_message("🎁❌ The gift for {character} could not be delivered ".format(character=self.name), channel="debug")
+                self.__game.save_message("🎁❌ The drone sending your gift crashed in a tree and has been destroyed", channel=self.name)
+                self.__game.save_message("🎁❌ The gift for {character} could not be delivered".format(character=self.name), channel="debug")
 
             # Lower the hype
             self.hype = MAX_HYPE // 2
@@ -480,26 +527,26 @@ class Character:
         if self.bag.water >= 1:
             self.bag.water -= 1
             self.thirst = MAX_THIRST
-            self.__game.save_message("💧✅ You drinked some water ", channel=self.name)
-            self.__game.save_message("💧✅ {character} drinks water ({water} left) ".format(character=self.name, water=self.bag.water), channel="debug")
+            self.__game.save_message("💧✅ You drinked some water", channel=self.name)
+            self.__game.save_message("💧✅ {character} drinks water ({water} left)".format(character=self.name, water=self.bag.water), channel="debug")
         elif self.thirst > MAX_THIRST // 2:
             self.thirst -= 1
-            self.__game.save_message("💧❌ You are slightly thirsty ", channel=self.name)
-            # self.__game.save_message("💧❌ {character} is thirsty and might die in {turns} turns ".format(character=self.name, turns=self.thirst+1), channel="debug")
+            self.__game.save_message("💧❌ You are slightly thirsty", channel=self.name)
+            # self.__game.save_message("💧❌ {character} is thirsty and might die in {turns} turns".format(character=self.name, turns=self.thirst+1), channel="debug")
         elif self.thirst > 1:
             self.thirst -= 1
-            self.__game.save_message("💧❌ You are thirsty ", channel=self.name)
-            self.__game.save_message("💧❌ {character} is thirsty and might die in {turns} turns ".format(character=self.name, turns=self.thirst+1), channel="debug")
+            self.__game.save_message("💧❌ You are thirsty", channel=self.name)
+            self.__game.save_message("💧❌ {character} is thirsty and might die in {turns} turns".format(character=self.name, turns=self.thirst+1), channel="debug")
         elif self.thirst == 1:
             self.thirst -= 1
-            self.__game.save_message("💧❌ You are deshydrated and will die next turn if you don't manage to find water ", channel=self.name)
-            self.__game.save_message("💧❌ {character} is deshydrated and might die next turn ".format(character=self.name), channel="debug")
+            self.__game.save_message("💧❌ You are deshydrated and will die next turn if you don't manage to find water", channel=self.name)
+            self.__game.save_message("💧❌ {character} is deshydrated and might die next turn".format(character=self.name), channel="debug")
         else:
             self.alive = False
             self.statistics["cause_of_death"] = "thirst"
-            self.__game.save_message("💀💧 You died of thirst ", channel=self.name)
-            self.__game.save_message("💀💧 {character} died of thirst ".format(character=self.name), channel="public", anti_channels=self.name)
-            self.__game.save_message("💀💧 {character} died of thirst ".format(character=self.name), channel="debug")
+            self.__game.save_message("💀💧 You died of thirst", channel=self.name)
+            self.__game.save_message("💀💧 {character} died of thirst".format(character=self.name), channel="public", anti_channels=self.name)
+            self.__game.save_message("💀💧 {character} died of thirst".format(character=self.name), channel="debug")
             for channel in [c.name for c in self.__game.get_alive_characters()]:
                 self.__game.save_message("💀💀 A tribute has fallen", channel=channel)
             return
@@ -508,26 +555,26 @@ class Character:
         if self.bag.food >= 1:
             self.bag.food -= 1
             self.hunger = MAX_HUNGER
-            self.__game.save_message("🍒✅ You ate some food ", channel=self.name)
-            self.__game.save_message("🍒✅ {character} ate food ({food} left) ".format(character=self.name, food=self.bag.food), channel="debug")
+            self.__game.save_message("🍒✅ You ate some food", channel=self.name)
+            self.__game.save_message("🍒✅ {character} ate food ({food} left)".format(character=self.name, food=self.bag.food), channel="debug")
         elif self.hunger > MAX_HUNGER // 2:
             self.hunger -= 1
-            self.__game.save_message("🍒❌ You are slightly hungry ", channel=self.name)
-            # self.__game.save_message("🍒❌ {character} is hungry and might die in {turns} turns ".format(character=self.name, turns=self.hunger+1), channel="debug")
+            self.__game.save_message("🍒❌ You are slightly hungry", channel=self.name)
+            # self.__game.save_message("🍒❌ {character} is hungry and might die in {turns} turns".format(character=self.name, turns=self.hunger+1), channel="debug")
         elif self.hunger > 1:
             self.hunger -= 1
             self.__game.save_message("🍒❌ You are hungry", channel=self.name)
-            self.__game.save_message("🍒❌ {character} is hungry and might die in {turns} turns ".format(character=self.name, turns=self.hunger+1), channel="debug")
+            self.__game.save_message("🍒❌ {character} is hungry and might die in {turns} turns".format(character=self.name, turns=self.hunger+1), channel="debug")
         elif self.hunger == 1:
             self.hunger -= 1
-            self.__game.save_message("🍒❌ You are starving and will die next turn if you don't manage to find food ", channel=self.name)
-            self.__game.save_message("🍒❌ {character} is starving and might die next turn ".format(character=self.name), channel="debug")
+            self.__game.save_message("🍒❌ You are starving and will die next turn if you don't manage to find food", channel=self.name)
+            self.__game.save_message("🍒❌ {character} is starving and might die next turn".format(character=self.name), channel="debug")
         else:
             self.alive = False
             self.statistics["cause_of_death"] = "hunger"
-            self.__game.save_message("💀🍒 You died of hunger ", channel=self.name)
-            self.__game.save_message("💀🍒 {character} died of hunger ".format(character=self.name), channel="public", anti_channels=[self.name])
-            self.__game.save_message("💀🍒 {character} died of hunger ".format(character=self.name), channel="debug")
+            self.__game.save_message("💀🍒 You died of hunger", channel=self.name)
+            self.__game.save_message("💀🍒 {character} died of hunger".format(character=self.name), channel="public", anti_channels=[self.name])
+            self.__game.save_message("💀🍒 {character} died of hunger".format(character=self.name), channel="debug")
             for channel in [c.name for c in self.__game.get_alive_characters()]:
                 self.__game.save_message("💀💀 A tribute has fallen", channel=channel)
             return
@@ -537,25 +584,25 @@ class Character:
         # instead. During the day, energy does not change. 
         if time == "night":
             if self.__current_action == "rest":
-                self.__game.save_message("🛌✅ You have regained some energy ", channel=self.name)
-                self.__game.save_message("🛌✅ {character} has regained 1 energy ".format(character=self.name), channel="debug")
+                self.__game.save_message("🛌✅ You have regained some energy", channel=self.name)
+                self.__game.save_message("🛌✅ {character} has regained 1 energy".format(character=self.name), channel="debug")
             else:
                 if self.energy > 1:
                     self.energy -= 1
-                    self.__game.save_message("🛌❌ You are tired ", channel=self.name)
-                    self.__game.save_message("🛌❌ {character} is tired ({energy} energy left) ".format(character=self.name, energy=self.energy), channel="debug")
+                    self.__game.save_message("🛌❌ You are tired", channel=self.name)
+                    self.__game.save_message("🛌❌ {character} is tired ({energy} energy left)", fmt={"character": self.name, "energy": self.energy}, channel="debug")
                 elif self.energy == 1:
                     self.energy -= 1
-                    self.__game.save_message("🛌❌ You are exhausted ", channel=self.name)
-                    self.__game.save_message("🛌❌ {character} is exhausted ({energy} energy left) ".format(character=self.name, energy=self.energy), channel="debug")
+                    self.__game.save_message("🛌❌ You are exhausted", channel=self.name)
+                    self.__game.save_message("🛌❌ {character} is exhausted ({energy} energy left)", fmt={"character": self.name, "energy": self.energy}, channel="debug")
                 elif self.mental > 1:
                     self.mental -= 1
-                    self.__game.save_message("🛌❌ Your lack of sleep is driving you insane, and you should rest within {turns} turns ".format(turns=self.mental+1), channel=self.name)
-                    self.__game.save_message("🛌❌ {character}'s lack of sleep is driving them insane ({turns} turns before dying) ".format(character=self.name, turns=self.mental+1), channel="debug")
+                    self.__game.save_message("🛌❌ Your lack of sleep is driving you insane, and you should rest within {turns} turns".format(turns=self.mental+1), channel=self.name)
+                    self.__game.save_message("🛌❌ {character}'s lack of sleep is driving them insane ({turns} turns before dying)".format(character=self.name, turns=self.mental+1), channel="debug")
                 elif  self.mental == 1:
                     self.mental -= 1
-                    self.__game.save_message("🛌❌ Your lack of sleep is driving you insane, and you should rest immediately ", channel=self.name)
-                    self.__game.save_message("🛌❌ {character}'s lack of sleep is driving them insane (last turns before dying) ".format(character=self.name), channel="debug")
+                    self.__game.save_message("🛌❌ Your lack of sleep is driving you insane, and you should rest immediately", channel=self.name)
+                    self.__game.save_message("🛌❌ {character}'s lack of sleep is driving them insane (last turns before dying)".format(character=self.name), channel="debug")
                 else:
                     self.alive = False
                     self.statistics["cause_of_death"] = "madness"
@@ -572,16 +619,16 @@ class Character:
             p_2 = self.statistics["position_history"][-2]
             p_3 = self.statistics["position_history"][-3]
             if p_1 == p_2 == p_3:
-                self.__game.save_message("👀👀 {character} has been spotted at {coords} ".format(character=self.name, coords=coords(p_1)), channel="public")
-                self.__game.save_message("👀👀 {character} has been spotted at {coords} ".format(character=self.name, coords=coords(p_1)), channel="debug")
+                self.__game.save_message("👀👀 {character} has been spotted at {coords}".format(character=self.name, coords=coords(p_1)), channel="public")
+                self.__game.save_message("👀👀 {character} has been spotted at {coords}".format(character=self.name, coords=coords(p_1)), channel="debug")
 
         # If a character has no health, they die (this should not happen)
         if self.health == 0 and self.alive:
             self.alive = False
             self.statistics["cause_of_death"] = "health"
-            self.__game.save_message("💀💀 You died ", channel=self.name)
-            self.__game.save_message("💀💀 {character} died ".format(character=self.name), channel="public", anti_channels=[self.name])
-            self.__game.save_message("💀💀 {character} died for unknown reasons ".format(character=self.name), channel="debug")
+            self.__game.save_message("💀💀 You died", channel=self.name)
+            self.__game.save_message("💀💀 {character} died".format(character=self.name), channel="public", anti_channels=[self.name])
+            self.__game.save_message("💀💀 {character} died for unknown reasons".format(character=self.name), channel="debug")
             return
 
         # Clears the number of spotted characters

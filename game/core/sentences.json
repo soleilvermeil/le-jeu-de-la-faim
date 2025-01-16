@@ -1,0 +1,88 @@
+{
+    "🔪➕ {character} found {weapon}": [
+        "🔪➕ {character} managed to get {weapon}",
+        "🔪➕ {character} rushed at {weapon}"
+    ],
+    "🔪💀 {attacker} slained {attacked}": [
+        "🔪💀 {attacker} killed {attacked}",
+        "🔪💀 {attacker} left {attacked} no chance",
+        "🔪💀 {attacker} immediately killed {attacked}",
+        "🔪💀 {attacker} destroyed {attacked}"
+    ],
+    "💨🌳 {character} fled far into the forest": [
+        "💨🌳 {character} ran away into the forest",
+        "💨🌳 {character} disappeared into the forest",
+        "💨🌳 {character} escaped into the forest"
+    ],
+    "🔪😈 {attacking} attacked {attacked} with {weapon}": [
+        "🔪😈 {attacking} didn't hesitate to throw themself at {attacked} with {weapon}",
+        "🔪😈 {attacking} ambushed {attacked} with {weapon}",
+        "🔪😈 After tracking {attacked} for almost an hour, {attacking} attacked them with {weapon}",
+        "🔪😈 {attacking} lured {attacked} into a trap, striking with {weapon} when they least expected it.",
+        "🔪😈 Hiding in the shadows, {attacking} waited until {attacked} was vulnerable, then unleashed {weapon} with ruthless precision.",
+        "🔪😈 A desperate {attacking} feigned surrender before lunging at {attacked} with {weapon}, catching them off guard.",
+        "🔪😈 With cunning determination, {attacking} pretended to be an ally, only to turn {weapon} against an unsuspecting {attacked}."
+    ],
+    "🛌❌ {character} is tired ({energy} energy left)": [
+        "🛌❌ {character} yawns ({energy} energy left)"
+    ],
+    "🔪🔪 {character} decided to hunt...": [
+        "🔪🔪 Driven by instinct, {character} started hunting...",
+        "🔪🔪 {character} set out to track down their next target...",
+        "🔪🔪 {character} prowled the arena, searching for prey...",
+        "🔪🔪 Driven by fear, {character} chose to hunt before they could be hunted..."
+    ],
+    "🌾🌾 {character} decided to gather resources...": [
+        "🌾🌾 Staying cautious, {character} decided to gather resources...",
+        "🌾🌾 {character} started collecting resources...",
+        "🌾🌾 {character} tried to gather resources, focused on survival..."
+    ],
+    "👻👻 {character} decided to hide...": [
+        "👻👻 {character} decided to hide, avoiding unnecessary risks...",
+        "👻👻 {character} decided to hide, hoping to stay unnoticed...",
+        "👻👻 Hearing a noise in the distance, {character} quickly hid..."
+    ],
+    "🛌🛌 {character} decided to rest...": [
+        "🛌🛌 {character} settled down to rest, preparing for what's next...",
+        "🛌🛌 {character} tries hard to get to sleep...",
+        "🛌🛌 {character} chose to rest, too exhausted to continue...",
+        "🛌🛌 With heavy eyelids, {character} decided to rest..."
+    ],
+    "🔪🌲 {character} decided to run away from the cornucopia...": [
+        "🔪🌲 Not wanting to fight, {character} quickly ran from the cornucopia, hoping to stay unnoticed...",
+        "🔪🌲 Fear overtook {character}, and they dashed away from the cornucopia as fast as they could..."
+    ],
+    "🔪🩸 {character} decided to run towards the cornucopia...": [
+        "🔪🩸 {character} charged toward the cornucopia, eager to claim the supplies first...",
+        "🔪🩸 Fuelled by desperation, {character} bolted for the cornucopia, eager to gather anything useful..."
+    ],
+    "🔪❌ {attacker} tried to attack {attacked}, but they escaped": [
+        "🔪❌ {attacker} tried to attack {attacked}. But {attacker} hesitated for a moment, and {attacked} seized the chance to escape",
+        "🔪❌ {attacker} pursued {attacked}, but they were too fast to catch",
+        "🔪❌ {attacker} moved in to attack, but {attacked} disappeared into the shadows",
+        "🔪❌ {attacker} tried to attack {attacked}, but they let them live after {attacked} begged them to them",
+        "🔪❌ {attacker} lunged at {attacked}, but stepped back when they offered to team up instead",
+        "🔪❌ {attacker} tried to attack {attacked}, but they managed to dodge",
+        "🔪❌ {attacker} was about to attack {attacked}, but suddenly changed their mind and let them live"
+    ],
+    "🔥🔥 Deadly zone is occuring {hazard_region}": [
+        "🔥🔥 A blazing wildfire erupts to the {hazard_region}, consuming everything in its path",
+        "🔥🔥 The ground trembles violently to the {hazard_region} as a sudden earthquake tears through the terrain",
+        "🔥🔥 Acidic rain begins to pour in the {hazard_region}",
+        "🔥🔥 A barrage of bombs rains down on the {hazard_region}",
+        "🔥🔥 A corrosive gas cloud spreads through the {hazard_region}, dissolving everything in its path",
+        "🔥🔥 A tiny black hole appeared in the {hazard_region}, ripping away all the matter around it."
+    ],
+    "💀🔥 {character} did not manage to escape the danger": [
+        "💀🔥 {character} couldn’t outrun the danger, falling victim to the threat",
+        "💀🔥 {character} failed to escape the danger in time, caught in the deadly path"
+    ],
+    "💀🔥 {character} stumbled trying to escape the danger": [
+        "💀🔥 {character} faltered at the last moment, their escape thwarted by a misstep"
+    ],
+    "🔥✅ {character} barely escaped the hazard zone": [
+        "🔥✅ {character} narrowly avoided disaster, escaping just in time",
+        "🔥✅ {character} rushed to safety, escaping the hazard zone with barely a second to spare"
+    ],
+    "🔪❌ {attacker} found no one to attack": []
+}
