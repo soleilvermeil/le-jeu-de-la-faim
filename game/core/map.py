@@ -14,7 +14,6 @@ class Map:
         
         if which is None:
             which = random.choice(["forest", "jungle", "ruins", "colosseum"])
-            print(f"Map type: {which}")
         
         cornucopia = Cell(
             "at|the cornucopia",

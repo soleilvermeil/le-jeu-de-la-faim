@@ -30,7 +30,6 @@ class Cell:
         dangerous_weapon_proba : int
             If a weapon is found, the probability of that weapon being
             dangerous.
-        
         """
         self.name = name
         self.icon = icon
