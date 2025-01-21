@@ -1,4 +1,5 @@
 from typing import List, Dict, Tuple, Literal
+import os
 import datetime
 import random
 import itertools
@@ -10,9 +11,17 @@ from .map import Map
 from .weapon import Weapon
 
 
+# Load 'sentences.json'
+# SENTENCES = json.load(open(os.path.join("game", "core", "sentences.json"), "r", encoding="utf8"))
+CURRENT_DIRECTORY = os.path.dirname(__file__)
+SENTENCES_PATH = os.path.join(CURRENT_DIRECTORY, "sentences.json")
+SENTENCES = json.load(open(SENTENCES_PATH, "r", encoding="utf8"))
+
+
+
 class Game:
 
-    def __init__(self, character_names: List[str]):
+    def __init__(self, character_names: List[str], map_name: str | None = None):
 
         self.id = datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")
         self.__characters = [Character(name) for name in character_names]
@@ -22,7 +31,7 @@ class Game:
         self.public_messages: List[str] = []
         self.debug_messages: List[str] = []
         self.private_messages: Dict[str, List[str]] = {name: [] for name in character_names}
-        self.map_ = Map(radius=TERRAIN_RADIUS)
+        self.map_ = Map(which=map_name, radius=TERRAIN_RADIUS)
         self.phase: Literal["move", "act"] = "move"
 
         # Fill the game field for every character
@@ -54,15 +63,12 @@ class Game:
         emphasis: bool = False,
         fmt: Dict[str, str] = {}
     ) -> None:
-        
-        # Load 'sentences.json'
-        sentences = json.load(open("game/core/sentences.json", "r", encoding="utf8"))
 
         # Check if there is a key equal to the message. If so, return a random
         # sentence from the list of sentences
-        if message in sentences and len(sentences[message]) > 0:
+        if message in SENTENCES and len(SENTENCES[message]) > 0:
             # message = random.choice(sentences[message] + [message])
-            message = random.choice(sentences[message])
+            message = random.choice(SENTENCES[message])
 
         # Format the message
         message = message.format(**fmt)
