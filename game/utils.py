@@ -287,3 +287,20 @@ def str2random(s: str, N: int) -> tuple:
     
     # Generate N random floats in the range (0, 1)
     return tuple([random.random() for _ in range(N)])
+
+
+def clamp(n: float, min_value: float, max_value: float) -> float:
+    """
+    Clamps a number between a minimum and a maximum value.
+    """
+    return max(min(n, max_value), min_value)
+
+
+def sign(x: float) -> int:
+    """
+    Returns the sign of a number.
+    """
+    if x != 0:
+        return abs(x) // x
+    else:
+        return 0

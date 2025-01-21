@@ -1,6 +1,6 @@
 import copy
 import os
-from typing import List, TypeVar
+from typing import List, TypeVar, Any
 import pandas as pd  # only for logging
 from .core import game
 from .utils import *
@@ -91,20 +91,51 @@ def __save_tsv(game_, state_history) -> None:
     df.to_csv(os.path.join("logs", f"log_{game_.id}.tsv"), sep="\t", index=False, encoding="utf8")
 
 
+def __return_leaderboard(game_, state_history) -> pd.DataFrame:
+
+    # Define the leaderboard, where keys are name of the characters and values
+    # are their final rank in the game (1 for the winner, 2 for the
+    # second place, etc.)
+    leaderboard = {
+        "game_id": [],
+        "character_name": [],
+        "rank": [],
+    }
+
+    # Check each state to get the alive characters, in reverse order
+    for state in reversed(state_history):
+        
+        alive_characters = state["game"]["state"]["alive_characters"]
+        number_of_entries_in_leaderboard = len(leaderboard["character_name"])
+
+        for character in alive_characters:
+            if character not in leaderboard["character_name"]:
+                leaderboard["game_id"].append(game_.id)
+                leaderboard["character_name"].append(character)
+                leaderboard["rank"].append(number_of_entries_in_leaderboard + 1)
+
+    # Save the leaderboard to a TSV file
+    # os.makedirs("logs", exist_ok=True)
+    df = pd.DataFrame(leaderboard)
+    # df.to_csv(os.path.join("logs", f"leaderboard_{game_.id}.tsv"), sep="\t", index=False, encoding="utf8")
+    return df
+
+
 def main(
     agents: List[Agent],
+    map_name: str | None = None,
     verbose: bool = False,
     save_txt: bool = False,
     save_tsv: bool = False,
-    **kwargs
-) -> None:
+    return_leaderboard: bool = False,
+) -> None | dict[str, Any]:
     
     # Check that all agents are unique
     names = [agent.name for agent in agents]
     assert len(names) == len(unique(names)), "All agents must have unique names."
 
     # Create the game object
-    game_ = game.Game(character_names=[agent.name for agent in agents])
+    game_ = game.Game(character_names=[agent.name for agent in agents], map_name=map_name)
 
     # Start the game
     game_.start_game()
@@ -153,6 +184,7 @@ def main(
                 continue
             else:
                 action = agent.interrogate()
+                # print(f"{agent.name} decided to {action}.")
 
             # Send the decision to the game
             game_.set_action(agent.name, action)
@@ -164,6 +196,8 @@ def main(
     if verbose:
         print("Game over! Winner is " + smart_join(lst=[c.name for c in game_.get_alive_characters()], sep=", ", last_sep=" and ") + "!")
 
+    values_to_return: dict[str, Any] = {}
+
     # Save the game log
     if save_txt:
         __save_txt(game_, state_history)
@@ -171,3 +205,11 @@ def main(
     # Save the full state history
     if save_tsv:
         __save_tsv(game_, state_history)
+
+    # Save the leaderboard
+    if return_leaderboard:
+        leaderboard = __return_leaderboard(game_, state_history)
+        values_to_return["leaderboard"] = leaderboard
+
+    # Return
+    return None if not values_to_return else values_to_return
