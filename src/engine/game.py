@@ -19,7 +19,7 @@ SENTENCES = json.load(open(SENTENCES_PATH, "r", encoding="utf8"))
 
 class Game:
 
-    def __init__(self, character_names: list[str], map_name: str | None = None):
+    def __init__(self, character_names: list[str], map_name: str | None = None, headless: bool = False):
 
         self.id = datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")
         self.__characters = [Character(name) for name in character_names]
@@ -31,11 +31,20 @@ class Game:
         self.private_messages: dict[str, list[str]] = {name: [] for name in character_names}
         self.map_ = Map(which=map_name, radius=TERRAIN_RADIUS)
         self.phase: Literal["move", "act"] = "move"
+        self.__headless = headless
 
         # Fill the game field for every character
         for character in self.__characters:
             character.set_game(self)
 
+        
+    def get_alive_characters(self, as_list: bool = False) -> list[Character]:
+        # NOTE: The following optimization had actually no huge impact :(
+        if not as_list:
+            return filter(lambda character: character.alive, self.__characters)
+        elif as_list:
+            return [character for character in self.__characters if character.alive]
+    
 
     def get_alive_characters(self) -> list[Character]:
         return [character for character in self.__characters if character.alive]
@@ -57,10 +66,13 @@ class Game:
         self,
         message: str,
         channel: str,
-        anti_channels: str = [],
+        anti_channels: str = None,
         emphasis: bool = False,
         fmt: dict[str, str] = {}
     ) -> None:
+        
+        if self.__headless:
+            return
 
         # Check if there is a key equal to the message. If so, return a random
         # sentence from the list of sentences
@@ -109,7 +121,7 @@ class Game:
 
             # If the character is the only one alive, announce the victory
             # instead of asking for an action
-            if len(self.get_alive_characters()) == 1 and character.alive:
+            if len(self.get_alive_characters(as_list=True)) == 1 and character.alive:
                 self.save_message("🎉🎉 You have won the Hunger Games! 🎉🎉", channel=character.name, emphasis=True)
                 self.save_message(
                     "🎉🎉 {character} has won the Hunger Games! 🎉🎉",
@@ -136,7 +148,10 @@ class Game:
                     emphasis=True,
                 )
             elif self.phase == "move":
-                map_ = self.map_.draw(discovered_cells=character.visited_cells, current_position=character.position)
+                if not self.__headless:  # NOTE: Drawing the map is actually quite slow
+                    map_ = self.map_.draw(discovered_cells=character.visited_cells, current_position=character.position)
+                else:
+                    map_ = ""
                 self.save_message(
                     "{character}, you are currently at {coords}\n{map}\nWhere do you want to go? (go north, go south, go east, go west, stay)",
                     fmt={"character": character.name, "coords": coords(character.position), "map": map_},
@@ -473,7 +488,7 @@ class Game:
             sum_of_hypes = sum([c.hype for c in characters_in_region])
 
             # Never take a hazard zone were all characters are in
-            if total_characters_in_region == len(self.get_alive_characters()):
+            if total_characters_in_region == len(self.get_alive_characters(as_list=True)):
                 average_hype = sum_of_hypes / total_characters_in_region
                 zone_weight = 0
 
@@ -830,7 +845,7 @@ class Game:
                 else:
                     self.save_message(
                         "⚔️⚔️ {number} tributes remain standing",
-                        fmt={"number": len(self.get_alive_characters())},
+                        fmt={"number": len(self.get_alive_characters(as_list=True))},
                         channel=channel,
                         emphasis=True,
                     )

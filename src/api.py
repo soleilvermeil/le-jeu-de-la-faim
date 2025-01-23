@@ -134,8 +134,14 @@ def api(
     names = [agent.name for agent in agents]
     assert len(names) == len(utils.unique(names)), "All agents must have unique names."
 
+    # Check if headless mode should be used
+    if not verbose and not save_txt and not save_tsv:
+        headless = True
+    else:
+        headless = False
+
     # Create the game object
-    game_ = game.Game(character_names=[agent.name for agent in agents], map_name=map_name)
+    game_ = game.Game(character_names=[agent.name for agent in agents], map_name=map_name, headless=headless)
 
     # Start the game
     game_.start_game()
@@ -150,8 +156,8 @@ def api(
         state = game_.get_state_of_game()
 
         # Save the state
-        state_history.append(copy.deepcopy(state))
-
+        state_history.append(state)
+        
         # Print the public messages
         if verbose:
             print(__str2border(""))
