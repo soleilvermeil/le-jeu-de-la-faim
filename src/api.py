@@ -1,10 +1,10 @@
 import copy
 import os
-from typing import List, TypeVar, Any
+from typing import TypeVar, Any
 import pandas as pd  # only for logging
-from .core import game
-from .utils import *
-from .agents.base_agent import BaseAgent
+from .engine import game
+from .shared import utils
+from .agents import BaseAgent
 
 
 # Define the type of the agent
@@ -12,7 +12,7 @@ Agent = TypeVar("Agent", bound=BaseAgent)
 
 
 # TODO: Combine this with the same function from BaseAgent
-def __messages2str(messages: List[str]) -> str:
+def __messages2str(messages: list[str]) -> str:
     """
     Returns a string representation of a list of messages.
     """
@@ -61,24 +61,24 @@ def __save_tsv(game_, state_history) -> None:
         game_state = state["game"]
         for character in list(state["characters"].keys()):
             character_state = state["characters"][character]
-            
-            flattened_game_state = flatten_dict({"game": game_state})
-            flattened_game_state = transform_dict_values(
+
+            flattened_game_state = utils.flatten_dict({"game": game_state})
+            flattened_game_state = utils.transform_dict_values(
                 dct=flattened_game_state,
                 transformations=[
                     (list, lambda x: "<list>"),
                     (str, lambda x: x if "\n" not in x else "<str>")
                 ]
             )
-            flattened_character_state = flatten_dict({"character": character_state})
-            flattened_character_state = transform_dict_values(
+            flattened_character_state = utils.flatten_dict({"character": character_state})
+            flattened_character_state = utils.transform_dict_values(
                 dct=flattened_character_state,
                 transformations=[
                     (list, lambda x: "<list>"),
                     (str, lambda x: x if "\n" not in x else "<str>")
                 ]
             )
-            
+
             combined_state = {**flattened_game_state, **flattened_character_state}
 
             if not data:
@@ -104,7 +104,7 @@ def __return_leaderboard(game_, state_history) -> pd.DataFrame:
 
     # Check each state to get the alive characters, in reverse order
     for state in reversed(state_history):
-        
+
         alive_characters = state["game"]["state"]["alive_characters"]
         number_of_entries_in_leaderboard = len(leaderboard["character_name"])
 
@@ -121,18 +121,18 @@ def __return_leaderboard(game_, state_history) -> pd.DataFrame:
     return df
 
 
-def main(
-    agents: List[Agent],
+def api(
+    agents: list[Agent],
     map_name: str | None = None,
     verbose: bool = False,
     save_txt: bool = False,
     save_tsv: bool = False,
     return_leaderboard: bool = False,
 ) -> None | dict[str, Any]:
-    
+
     # Check that all agents are unique
     names = [agent.name for agent in agents]
-    assert len(names) == len(unique(names)), "All agents must have unique names."
+    assert len(names) == len(utils.unique(names)), "All agents must have unique names."
 
     # Create the game object
     game_ = game.Game(character_names=[agent.name for agent in agents], map_name=map_name)
@@ -151,20 +151,20 @@ def main(
 
         # Save the state
         state_history.append(copy.deepcopy(state))
-        
+
         # Print the public messages
         if verbose:
             print(__str2border(""))
             print(__messages2str(state["debug"]["messages"]))
             print(__str2border(""))
-            
+
         # Send to all agents the state of the game
         for agent in agents:
 
             # If character has been dead last turn, skip
             if len(state_history) >= 2 and not state_history[-2]["characters"][agent.name]["state"]["alive"]:
                 continue
-            
+
             # Communicate the state of the game to the agent
             agent.give_state_of_game(state)
 
@@ -174,7 +174,7 @@ def main(
 
         # Ask each agent to make a decision
         for agent in agents:
-            
+
             # Check if still alive. If dead, do only inform about the death
             # if it has not been done already. If still alive, ask for a
             # decision.
@@ -194,14 +194,14 @@ def main(
 
     # Print the winner
     if verbose:
-        print("Game over! Winner is " + smart_join(lst=[c.name for c in game_.get_alive_characters()], sep=", ", last_sep=" and ") + "!")
+        print("Game over! Winner is " + utils.smart_join(lst=[c.name for c in game_.get_alive_characters()], sep=", ", last_sep=" and ") + "!")
 
     values_to_return: dict[str, Any] = {}
 
     # Save the game log
     if save_txt:
         __save_txt(game_, state_history)
-        
+
     # Save the full state history
     if save_tsv:
         __save_tsv(game_, state_history)

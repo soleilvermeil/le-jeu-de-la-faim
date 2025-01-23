@@ -5,8 +5,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 
 # Importing game module
-from game.interface import main
-from game.agents.personality_agent import PersonalityAgent
+from src.api import api
+from src.agents import PersonalityAgent
 
 
 # Importing other modules
@@ -47,7 +47,7 @@ if __name__ == '__main__':
             "hostility": HIGH,
         }
     }
-    
+
     # Define agents names
     AGENT_NAMES = [
         "Alpha",
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     for name, model in personnalities.items():
         print(f"{name} is {model}")
 
-    # Create agents    
+    # Create agents
     agents = [
         PersonalityAgent(
             name=name,
@@ -99,4 +99,4 @@ if __name__ == '__main__':
     ]
 
     # Run the game
-    main(agents, save_txt=True)
+    api(agents, save_txt=True)

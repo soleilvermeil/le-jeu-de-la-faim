@@ -5,39 +5,12 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 
 # Importing game module
-from game.agents.random_agent import RandomAgent
-from game.interface import main
+from src.api import api
+from src.agents import RandomAgent
 
 
 if __name__ == '__main__':
-    
-    agents = [
-        RandomAgent("Alpha"),
-        RandomAgent("Bravo"),
-        RandomAgent("Charlie"),
-        RandomAgent("Delta"),
-        RandomAgent("Echo"),
-        RandomAgent("Foxtrot"),
-        RandomAgent("Golf"),
-        RandomAgent("Hotel"),
-        RandomAgent("India"),
-        RandomAgent("Juliet"),
-        RandomAgent("Kilo"),
-        RandomAgent("Lima"),
-        RandomAgent("Mike"),
-        RandomAgent("November"),
-        RandomAgent("Oscar"),
-        RandomAgent("Papa"),
-        RandomAgent("Quebec"),
-        RandomAgent("Romeo"),
-        RandomAgent("Sierra"),
-        RandomAgent("Tango"),
-        RandomAgent("Uniform"),
-        RandomAgent("Victor"),
-        RandomAgent("Whiskey"),
-        RandomAgent("Xray"),
-        RandomAgent("Yankee"),
-        RandomAgent("Zulu"),
-    ]
-    
-    main(agents, save_txt=True, save_tsv=True)
+
+    agents = [RandomAgent(name=str(i)) for i in range(24)]
+
+    api(agents=agents, save_txt=True, save_tsv=True)

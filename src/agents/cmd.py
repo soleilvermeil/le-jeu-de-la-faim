@@ -1,11 +1,11 @@
-from .base_agent import BaseAgent
 import os
 import re
-from ..utils import smart_input
+from .base import BaseAgent
+from ..shared import utils
 
 
 class CMDAgent(BaseAgent):
-    
+
     def __init__(self, name: str):
 
         # Initialize the parent class
@@ -29,7 +29,7 @@ class CMDAgent(BaseAgent):
         print(super().messages2str(self.current_state["characters"][self.name]["messages"]))
 
         # Ask the user to input an action
-        action = smart_input(
+        action = utils.smart_input(
             prompt=f"Your action ({', '.join(possible_actions)}): ",
             validator=lambda x: x in possible_actions,
             error_message="Invalid action. Please try again.",
@@ -44,7 +44,7 @@ class CMDAgent(BaseAgent):
 
         # Clear the console
         os.system("cls" if os.name == "nt" else "clear")
-        
+
         # Print to console the private message
         print(super().messages2str(self.current_state["characters"][self.name]["messages"]))
 

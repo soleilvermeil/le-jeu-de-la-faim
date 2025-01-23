@@ -1,8 +1,8 @@
-from typing import TYPE_CHECKING, Dict, List, Literal, Tuple
-from ..utils import *
+from typing import TYPE_CHECKING, Literal
 from .constants import *
 from .bag import Bag
 from .weapon import Weapon
+from ..shared.utils import *
 
 
 if TYPE_CHECKING:
@@ -18,7 +18,7 @@ class Character:
         self.hunger: int = MAX_HUNGER
         self.thirst: int = MAX_THIRST
         self.hype: int = 0
-        self.position: Tuple[int] = (0, 0)
+        self.position: tuple[int] = (0, 0)
         self.__current_action: str = "none"
         self.current_spotted_characters: int = 0
         self.bag: Bag = Bag()
@@ -30,22 +30,22 @@ class Character:
             "cause_of_death": "",
         }
         self.__game: "Game" = None
-        self.visited_cells: List[Tuple[int]] = [(0, 0)]
+        self.visited_cells: list[tuple[int]] = [(0, 0)]
 
 
     def set_game(self, game: "Game") -> None:
         self.__game = game
 
-    
+
     def get_action(self) -> str:
         return self.__current_action
 
 
     def __repr__(self) -> str:
         return self.name
-    
 
-    def to_dict(self) -> Dict[str, str | int | float | bool]:
+
+    def to_dict(self) -> dict[str, str | int | float | bool]:
         """
         Returns a flat dictionary (i.e. all values are either strings,
         integers, floats or booleans) representing the character.
@@ -130,11 +130,11 @@ class Character:
 
         # Update the statistics
         self.statistics["position_history"].append(self.position)
-        
+
         # If the visited cell is new, add it to the list
         if self.position not in self.visited_cells:
             self.visited_cells.append(self.position)
-        
+
         # If the character was moving, inform them of the current cell
         if direction != "stay":
             cell = self.__game.map_.cells[self.position]
@@ -188,7 +188,7 @@ class Character:
             self.__game.save_message("🚶❎ {character} decided to stay...", fmt={"character": self.name}, channel="debug")
         else:
             raise ValueError(f"Unknown action: {action}")
-        
+
         # Update the character's action
         self.__current_action = action
 
@@ -202,7 +202,7 @@ class Character:
             return Weapon("bare hands", 1)
         else:
             return max(self.bag.weapons, key=lambda w: w.damage)
-    
+
 
     def change_hype(self, value: int, show: bool = True) -> None:
         """
@@ -340,7 +340,7 @@ class Character:
 
             # Get hype for the kill + the other character's hype
             hype_gain += HYPE_WHEN_KILLING + other.hype
-            
+
             # Loot the body
             self.loot(other)
 
@@ -438,7 +438,7 @@ class Character:
         # If the character found nothing
         else:
             self.__game.save_message("👻❌ {character} didn't find anything while hiding".format(character=self.name), channel="debug")
-        
+
         # Change the hype
         self.change_hype(HYPE_WHEN_HIDING)
 
@@ -522,7 +522,7 @@ class Character:
         alive_characters = [c for c in self.__game.get_alive_characters()]
         if len(alive_characters) == 1:
             return
-        
+
         # Thirst
         if self.bag.water >= 1:
             self.bag.water -= 1
@@ -578,10 +578,10 @@ class Character:
             for channel in [c.name for c in self.__game.get_alive_characters()]:
                 self.__game.save_message("💀💀 A tribute has fallen", channel=channel)
             return
-        
+
         # Energy: if a character does not rest during the night, they will lose
         # 1 energy. If they have no energy, they will lose mental health
-        # instead. During the day, energy does not change. 
+        # instead. During the day, energy does not change.
         if time == "night":
             if self.__current_action == "rest":
                 self.__game.save_message("🛌✅ You have regained some energy", channel=self.name)
@@ -612,7 +612,7 @@ class Character:
                     for channel in [c.name for c in self.__game.get_alive_characters()]:
                         self.__game.save_message("💀💀 A tribute has fallen", channel=channel)
                     return
-                
+
         # If a character has not moved for 3 turns, their position is revealed
         if len(self.statistics["position_history"]) > 3 and TERRAIN_RADIUS > 0:
             p_1 = self.statistics["position_history"][-1]
@@ -634,5 +634,5 @@ class Character:
         # Clears the number of spotted characters
         self.current_spotted_characters = 0
 
-        # Reset action (should be performed last) 
+        # Reset action (should be performed last)
         self.__current_action = "none"

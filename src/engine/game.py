@@ -1,36 +1,34 @@
-from typing import List, Dict, Tuple, Literal
+from typing import Literal
 import os
 import datetime
 import random
 import itertools
 import json
-from ..utils import *
 from .constants import *
 from .character import Character
 from .map import Map
 from .weapon import Weapon
+from ..shared.utils import *
 
 
 # Load 'sentences.json'
-# SENTENCES = json.load(open(os.path.join("game", "core", "sentences.json"), "r", encoding="utf8"))
 CURRENT_DIRECTORY = os.path.dirname(__file__)
 SENTENCES_PATH = os.path.join(CURRENT_DIRECTORY, "sentences.json")
 SENTENCES = json.load(open(SENTENCES_PATH, "r", encoding="utf8"))
 
 
-
 class Game:
 
-    def __init__(self, character_names: List[str], map_name: str | None = None):
+    def __init__(self, character_names: list[str], map_name: str | None = None):
 
         self.id = datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")
         self.__characters = [Character(name) for name in character_names]
         self.day: int = 0
         self.time: Literal["day", "night"] = "day"
-        self.__announced_dead_characters: List[Character] = []
-        self.public_messages: List[str] = []
-        self.debug_messages: List[str] = []
-        self.private_messages: Dict[str, List[str]] = {name: [] for name in character_names}
+        self.__announced_dead_characters: list[Character] = []
+        self.public_messages: list[str] = []
+        self.debug_messages: list[str] = []
+        self.private_messages: dict[str, list[str]] = {name: [] for name in character_names}
         self.map_ = Map(which=map_name, radius=TERRAIN_RADIUS)
         self.phase: Literal["move", "act"] = "move"
 
@@ -38,20 +36,20 @@ class Game:
         for character in self.__characters:
             character.set_game(self)
 
-        
-    def get_alive_characters(self) -> List[Character]:
-        return [character for character in self.__characters if character.alive]
-    
 
-    def get_dead_characters(self) -> List[Character]:
+    def get_alive_characters(self) -> list[Character]:
+        return [character for character in self.__characters if character.alive]
+
+
+    def get_dead_characters(self) -> list[Character]:
         """
         Get ALL dead characters, including those that have not been announced
         dead yet.
         """
         return [character for character in self.__characters if not character.alive]
-    
 
-    def get_all_characters(self) -> List[Character]:
+
+    def get_all_characters(self) -> list[Character]:
         return self.__characters
 
 
@@ -61,7 +59,7 @@ class Game:
         channel: str,
         anti_channels: str = [],
         emphasis: bool = False,
-        fmt: Dict[str, str] = {}
+        fmt: dict[str, str] = {}
     ) -> None:
 
         # Check if there is a key equal to the message. If so, return a random
@@ -92,7 +90,7 @@ class Game:
 
 
     def start_game(self):
-        
+
         # Print the welcome message
         for channel in ["public", "debug"] + [c.name for c in self.__characters]:
             self.save_message(
@@ -101,13 +99,14 @@ class Game:
                 channel=channel,
             )
 
-    def get_state_of_game(self) -> Dict[str, str]:
+
+    def get_state_of_game(self) -> dict[str, str]:
 
         # Ask the character what they want to do now
         for character in self.__characters:
             if not character.alive:
                 continue
-            
+
             # If the character is the only one alive, announce the victory
             # instead of asking for an action
             if len(self.get_alive_characters()) == 1 and character.alive:
@@ -197,7 +196,7 @@ class Game:
 
 
     def update_game(self):
-        
+
         # Resolve the first turn
         if self.day == 0:
             # Show time (manually)
@@ -221,15 +220,15 @@ class Game:
 
             # Update the game phase
             self.phase = "act"
-        
+
         # Resolve the actions
         elif self.phase == "act":
 
             # Show time
             self.__show_time_and_day()
-            
+
             if self.time == "night" and random_bool(EVENT_PROBABILITY):
-                
+
                 # Resolve hazard
                 hazard_region = self.__get_lowest_hype_region()
 
@@ -262,11 +261,11 @@ class Game:
             )
 
 
-    def __get_characters_in_cell(self, position: Tuple[int, int]) -> List[Character]:
+    def __get_characters_in_cell(self, position: tuple[int, int]) -> list[Character]:
         characters = [character for character in self.__characters if (character.position == position and character.alive)]
         random.shuffle(characters)
         return characters
-    
+
 
     def __resolve_first_turn(self):
         """
@@ -347,7 +346,7 @@ class Game:
 
         # Some characters that try to escape are hurt
         for attacked in trapped_characters:
-            potential_attackers: List[Character] = [c for c in fighting_characters if c.alive]
+            potential_attackers: list[Character] = [c for c in fighting_characters if c.alive]
             if len(potential_attackers) == 0:
                 break
             attacker: Character = random.choice(potential_attackers)
@@ -389,7 +388,7 @@ class Game:
                 channel="debug",
             )
             character.move(random.choice(["go north", "go south", "go west", "go east"]))
-        
+
 
     def __resolve_movements(self):
         """
@@ -425,10 +424,10 @@ class Game:
                 )
 
 
-    def __get_cells_in_region(self, region: Literal["north", "south", "east", "west"]) -> List[Tuple[int, int]]:
-        
+    def __get_cells_in_region(self, region: Literal["north", "south", "east", "west"]) -> list[tuple[int, int]]:
+
         # Get all cells
-        all_cells: List[Tuple[int, int]] = list(itertools.product(range(-TERRAIN_RADIUS, TERRAIN_RADIUS + 1), repeat=2))
+        all_cells: list[tuple[int, int]] = list(itertools.product(range(-TERRAIN_RADIUS, TERRAIN_RADIUS + 1), repeat=2))
 
         # Filter cells based on region and return
         if region == "north":
@@ -443,7 +442,7 @@ class Game:
             raise ValueError("Region must be one of 'north', 'south', 'east', 'west'")
 
 
-    def __get_characters_in_region(self, region: Literal["north", "south", "east", "west"]) -> List[Character]:
+    def __get_characters_in_region(self, region: Literal["north", "south", "east", "west"]) -> list[Character]:
 
         # Get cells in region
         cells_in_region = self.__get_cells_in_region(region=region)
@@ -457,9 +456,9 @@ class Game:
 
 
     def __get_lowest_hype_region(self) -> Literal["north", "south", "east", "west"] | None:
-        
+
         # Define weight for each region
-        region_weights: Dict[str, float] = {
+        region_weights: dict[str, float] = {
             "north": 0,
             "south": 0,
             "east": 0,
@@ -492,7 +491,7 @@ class Game:
             else:
                 average_hype = 0
                 zone_weight = 0
-                
+
             region_weights[region] = zone_weight
             self.save_message(
                 "🔥🔥 Region {region} has {total_characters_in_hazard_zone} characters with an average hype of {average_hype:.2f} (weight = {zone_weight:.2f})",
@@ -504,7 +503,7 @@ class Game:
                 },
                 channel="debug",
             )
-        
+
         # Abort if no valid hazard zone is found
         if sum(list(region_weights.values())) == 0:
             self.save_message(
@@ -512,7 +511,7 @@ class Game:
                 channel="debug",
             )
             return None
-        
+
         # Return a random region based on the weights
         chosen_region = random.choices(
             list(region_weights.keys()),
@@ -526,7 +525,7 @@ class Game:
         return chosen_region
 
 
-    def __resolve_actions(self, characters_subset: List[Character] | None = None) -> None:
+    def __resolve_actions(self, characters_subset: list[Character] | None = None) -> None:
         """
         Once every character has chosen an action, the game will make them happen.
         Hunt actions are high priority and will be resolved first. Characters that
@@ -546,9 +545,9 @@ class Game:
 
             # Define random battles, useful for later
             hunting_characters = [character for character in characters_in_the_cell if character.get_action() == "hunt"]
-            attacks: Dict[Character, Character] = {}
+            attacks: dict[Character, Character] = {}
             for attacker in hunting_characters:
-                
+
                     # Each person in the same cell as the attacker has a chance
                     # to be attacked. But each potential target has a chance to
                     # not be detected by the attacker, based on the visibility
@@ -622,7 +621,7 @@ class Game:
                             fmt={"attacker": attacker.name, "attacked": attacked.name},
                             channel="debug",
                         )
-                
+
                 # If one of the characters is dead during the resolve, skip.
                 # More precisely: if the attacked died (and thus if the
                 # attacker is still alive), simply state that nobody was found.
@@ -636,7 +635,7 @@ class Game:
                         fmt={"attacker": attacker.name, "attacked": attacked.name},
                         channel="debug",
                     )
-                
+
                 # If the attacker died, simply skip.
                 else:
                     pass
@@ -654,8 +653,8 @@ class Game:
                         fmt={"attacked": attacked.name},
                         channel="debug",
                     )
-    
-    
+
+
     def __resolve_hazard(self, hazard_region: Literal["north", "south", "east", "west"]) -> None:
         """
         During the game, events can happen. Approximately half of the terrain
@@ -663,7 +662,7 @@ class Game:
         do not move out of the dangerous zone will be killed. Note that the
         event will focus regions where tributes have the lowest average hype.
         """
-        
+
         characters_in_hazard_region = self.__get_characters_in_region(region=hazard_region)
 
         for character in characters_in_hazard_region:
@@ -754,8 +753,8 @@ class Game:
                         fmt={"character": character.name},
                         channel="debug",
                     )
-    
-    
+
+
     def __show_time_and_day(self) -> str:
 
         if self.phase == "move":

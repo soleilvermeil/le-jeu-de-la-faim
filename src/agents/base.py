@@ -2,16 +2,16 @@ from typing import List
 
 
 class BaseAgent:
-    
+
     def __init__(self, name: str):
         self.name = name
         self.current_state = None
-        
+
 
     def __repr__(self):
         return f"{self.__class__.__name__}(name={self.name})"
-    
-        
+
+
     def messages2str(self, messages: List[str]) -> str:
         """
         Returns a string representation of a list of messages.
@@ -35,7 +35,7 @@ class BaseAgent:
         """
         return f"{s:-<{total_length-1}}"
 
-        
+
 
     def give_state_of_game(self, game_state: str) -> None:
         """
@@ -51,15 +51,15 @@ class BaseAgent:
         which has been given to it by the `give_state_of_game` method.
         """
         raise NotImplementedError("The method `interrogate` must be implemented by the child class.")
-    
+
 
     def inform_death(self) -> None:
         """
         Inform the agent that the character has died.
         """
         pass
-    
-            
+
+
     def is_alive(self) -> bool:
         """
         Simple method to check if the character is alive.

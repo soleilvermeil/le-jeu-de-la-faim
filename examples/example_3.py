@@ -5,9 +5,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 
 # Importing game module
-from game.interface import main
-from game.agents.llm_agent import LLMAgent
-from game.agents.random_agent import RandomAgent
+from src.api import api
+from src.agents import RandomAgent, LLMAgent
 
 
 # Importing other modules
@@ -16,7 +15,7 @@ import dotenv
 
 
 if __name__ == '__main__':
-    
+
     # Get API key from OpenAI
     dotenv.load_dotenv()
     API_KEY = os.environ.get("OPENAI_API_KEY")
@@ -79,5 +78,5 @@ if __name__ == '__main__':
         RandomAgent("Yankee"),
         RandomAgent("Zulu"),
     ]
-    
-    main(agents, save_txt=True)
+
+    api(agents, save_txt=True)

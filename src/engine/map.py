@@ -1,6 +1,6 @@
 import random
 import itertools
-from typing import Tuple, Literal
+from typing import Literal
 from .constants import *
 from .cell import Cell
 
@@ -11,10 +11,10 @@ class Map:
         radius: int,
         which: Literal["forest", "jungle", "ruins", "colosseum"] | None = None,
     ) -> None:
-        
+
         if which is None:
             which = random.choice(["forest", "jungle", "ruins", "colosseum"])
-        
+
         cornucopia = Cell(
             "at|the cornucopia",
             icon="🌽",
@@ -24,9 +24,9 @@ class Map:
             dangerous_weapon_proba=1,
             visibility_proba=1.0,
         )
-        
+
         if which == "forest":
-            
+
             cells = [
                 Cell(
                     "in|a forest",
@@ -51,7 +51,7 @@ class Map:
                     water_multiplier=0.5,
                 ),
             ]
-        
+
         elif which == "jungle":
             cells = [
                 Cell(
@@ -75,9 +75,9 @@ class Map:
                     visibility_proba=0.9,
                 ),
             ]
-            
+
         elif which == "colosseum":
-            
+
             cells = [
                 Cell(
                     "in|a dark corridor",
@@ -94,9 +94,9 @@ class Map:
                     water_multiplier=0.1,
                 ),
             ]
-            
+
         elif which == "ruins":
-    
+
             cells = [
                 Cell(
                     "in|a collapsed building",
@@ -118,19 +118,19 @@ class Map:
                 ),
             ]
 
-            
+
         self.cells = {
             (x, y): random.choice(cells)
             for x, y in itertools.product(range(-radius, radius+1), range(-radius, radius+1)) if (x, y) != (0, 0)
         }
         self.cells[(0, 0)] = cornucopia
 
-            
-            
 
 
-    def draw(self, discovered_cells, current_position: Tuple[int, int], inner_cell_width: int = 3) -> str:
-        
+
+
+    def draw(self, discovered_cells, current_position: tuple[int, int], inner_cell_width: int = 3) -> str:
+
         corner = ""
         v_edge = ""
         h_edge = ""
