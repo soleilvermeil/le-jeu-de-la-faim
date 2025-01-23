@@ -46,10 +46,6 @@ class Game:
             return [character for character in self.__characters if character.alive]
 
 
-    def get_alive_characters(self) -> list[Character]:
-        return [character for character in self.__characters if character.alive]
-
-
     def get_dead_characters(self) -> list[Character]:
         """
         Get ALL dead characters, including those that have not been announced
