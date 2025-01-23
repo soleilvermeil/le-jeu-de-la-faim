@@ -1,11 +1,10 @@
-from typing import List
 from .weapon import Weapon
 
 
 class Bag:
 
     def __init__(self):
-        self.weapons: List[Weapon] = []
+        self.weapons: list[Weapon] = []
         self.food: int = 0
         self.water: int = 0
 

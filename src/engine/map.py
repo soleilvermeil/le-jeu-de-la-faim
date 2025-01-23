@@ -1,6 +1,6 @@
 import random
 import itertools
-from typing import Tuple, Literal
+from typing import Literal
 from .constants import *
 from .cell import Cell
 
@@ -129,7 +129,7 @@ class Map:
 
 
 
-    def draw(self, discovered_cells, current_position: Tuple[int, int], inner_cell_width: int = 3) -> str:
+    def draw(self, discovered_cells, current_position: tuple[int, int], inner_cell_width: int = 3) -> str:
 
         corner = ""
         v_edge = ""

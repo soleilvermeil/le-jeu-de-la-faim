@@ -1,8 +1,8 @@
-from typing import TYPE_CHECKING, Dict, List, Literal, Tuple
-from ..utils import *
+from typing import TYPE_CHECKING, Literal
 from .constants import *
 from .bag import Bag
 from .weapon import Weapon
+from ..shared.utils import *
 
 
 if TYPE_CHECKING:
@@ -18,7 +18,7 @@ class Character:
         self.hunger: int = MAX_HUNGER
         self.thirst: int = MAX_THIRST
         self.hype: int = 0
-        self.position: Tuple[int] = (0, 0)
+        self.position: tuple[int] = (0, 0)
         self.__current_action: str = "none"
         self.current_spotted_characters: int = 0
         self.bag: Bag = Bag()
@@ -30,7 +30,7 @@ class Character:
             "cause_of_death": "",
         }
         self.__game: "Game" = None
-        self.visited_cells: List[Tuple[int]] = [(0, 0)]
+        self.visited_cells: list[tuple[int]] = [(0, 0)]
 
 
     def set_game(self, game: "Game") -> None:
@@ -45,7 +45,7 @@ class Character:
         return self.name
 
 
-    def to_dict(self) -> Dict[str, str | int | float | bool]:
+    def to_dict(self) -> dict[str, str | int | float | bool]:
         """
         Returns a flat dictionary (i.e. all values are either strings,
         integers, floats or booleans) representing the character.
