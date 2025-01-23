@@ -46,12 +46,12 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 # Import the interface
-from game.interface import main
+from src.api import api
 
 # Import an agent class (e.g. RandomAgent)
-from game.agents.random_agent import RandomAgent
+from src.agents import RandomAgent
 
 # Run the main, giving a list of agents as argument
 agents = [RandomAgent("Alice"), RandomAgent("Bob"), RandomAgent("Charlie")]
-main(agents)
+api(agents, verbose=True)
 ```
