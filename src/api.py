@@ -1,6 +1,6 @@
 import copy
 import os
-from typing import List, TypeVar, Any
+from typing import TypeVar, Any
 import pandas as pd  # only for logging
 from .engine import game
 from .shared import utils
@@ -12,7 +12,7 @@ Agent = TypeVar("Agent", bound=BaseAgent)
 
 
 # TODO: Combine this with the same function from BaseAgent
-def __messages2str(messages: List[str]) -> str:
+def __messages2str(messages: list[str]) -> str:
     """
     Returns a string representation of a list of messages.
     """
@@ -122,7 +122,7 @@ def __return_leaderboard(game_, state_history) -> pd.DataFrame:
 
 
 def api(
-    agents: List[Agent],
+    agents: list[Agent],
     map_name: str | None = None,
     verbose: bool = False,
     save_txt: bool = False,
