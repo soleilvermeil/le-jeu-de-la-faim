@@ -6,8 +6,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 # Importing game module
 from src.api import api
-from src.agents.llm import LLMAgent
-from src.agents.random import RandomAgent
+from src.agents import RandomAgent, LLMAgent
 
 
 # Importing other modules

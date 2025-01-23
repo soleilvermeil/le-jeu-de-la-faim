@@ -6,7 +6,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 # Importing game module
 from src.api import api
-from src.agents.random import RandomAgent
+from src.agents import RandomAgent
 
 
 if __name__ == '__main__':

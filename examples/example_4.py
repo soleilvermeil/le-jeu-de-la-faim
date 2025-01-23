@@ -6,8 +6,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 # Importing game module
 from src.api import api
-from src.agents.cmd import CMDAgent
-from src.agents.personality import PersonalityAgent
+from src.agents.cmd import CMDAgent, PersonalityAgent
 from src.utils import smart_input
 
 
