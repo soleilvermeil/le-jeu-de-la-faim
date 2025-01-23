@@ -45,32 +45,32 @@ class Character:
         return self.name
 
 
-    def to_dict(self) -> dict[str, str | int | float | bool]:
+    def get_state(self) -> dict[str, Any]:
         """
         Returns a flat dictionary (i.e. all values are either strings,
         integers, floats or booleans) representing the character.
         """
-        best_weapon = self.get_best_weapon()  # Slight optimization
+        best_weapon = self.get_best_weapon()
         return {
-            "alive": self.alive, # bool
-            "health": self.health, # int
-            "mental": self.mental, # int
-            "energy": self.energy, # int
-            "hunger": self.hunger, # int
-            "thirst": self.thirst, # int
-            "hype": self.hype, # int
-            "current_action": self.__current_action, # str
-            "current_spotted_characters": self.current_spotted_characters, # int
-            "x": self.position[0], # int
-            "y": self.position[1], # int
-            "bag_food": self.bag.food, # int
-            "bag_water": self.bag.water, # int
-            "bag_best_weapon_name": best_weapon.name, # str
-            "bag_best_weapon_damage": best_weapon.damage, # int
-            "bag_weapons_count": len(self.bag.weapons), # int
-            "stats_kills": self.statistics["kills"], # int
-            "stats_gifts_received": self.statistics["gifts_received"], # int
-            "stats_cause_of_death": self.statistics["cause_of_death"], # str
+            "alive": self.alive, #
+            "health": self.health,
+            "mental": self.mental,
+            "energy": self.energy,
+            "hunger": self.hunger,
+            "thirst": self.thirst,
+            "hype": self.hype,
+            "current_action": self.__current_action,
+            "current_spotted_characters": self.current_spotted_characters,
+            "x": self.position[0],
+            "y": self.position[1],
+            "bag_food": self.bag.food,
+            "bag_water": self.bag.water,
+            "bag_best_weapon_name": best_weapon.name,
+            "bag_best_weapon_damage": best_weapon.damage,
+            "bag_weapons_count": len(self.bag.weapons),
+            "stats_kills": self.statistics["kills"],
+            "stats_gifts_received": self.statistics["gifts_received"],
+            "stats_cause_of_death": self.statistics["cause_of_death"],
         }
 
 
@@ -520,7 +520,7 @@ class Character:
         # having no winner at all. TODO: this is a temporary fix, because the
         # actor playing this character might wonder why their character does
         # not die, for example if they were starving previous turn.
-        alive_characters = [c for c in self.__game.get_alive_characters()]
+        alive_characters = self.__game.get_alive_characters(as_list=True)
         if len(alive_characters) == 1:
             return
 
