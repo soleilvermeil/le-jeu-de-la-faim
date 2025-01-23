@@ -140,6 +140,12 @@ def api(
     else:
         headless = False
 
+    # Check if headless mode should be used
+    if not verbose and not save_txt and not save_tsv:
+        headless = True
+    else:
+        headless = False
+
     # Create the game object
     game_ = game.Game(character_names=[agent.name for agent in agents], map_name=map_name, headless=headless)
 
