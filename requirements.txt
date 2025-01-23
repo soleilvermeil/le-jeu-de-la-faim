@@ -1,1 +1,4 @@
 pandas
+yaml
+openai
+pydantic
