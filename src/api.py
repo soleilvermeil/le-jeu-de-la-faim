@@ -2,9 +2,9 @@ import copy
 import os
 from typing import List, TypeVar, Any
 import pandas as pd  # only for logging
-from .core import game
+from .engine import game
 from .utils import *
-from .agents.base_agent import BaseAgent
+from .agents.base import BaseAgent
 
 
 # Define the type of the agent
@@ -121,7 +121,7 @@ def __return_leaderboard(game_, state_history) -> pd.DataFrame:
     return df
 
 
-def main(
+def api(
     agents: List[Agent],
     map_name: str | None = None,
     verbose: bool = False,

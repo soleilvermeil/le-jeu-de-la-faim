@@ -1,4 +1,4 @@
-from .base_agent import BaseAgent
+from .base import BaseAgent
 import os
 import re
 from ..utils import smart_input

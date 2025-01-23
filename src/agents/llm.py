@@ -1,4 +1,4 @@
-from .base_agent import BaseAgent
+from .base import BaseAgent
 from openai import OpenAI
 import json
 import os

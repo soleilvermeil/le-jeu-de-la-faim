@@ -5,10 +5,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 
 # Importing game module
-from game.interface import main
-from game.agents.cmd_agent import CMDAgent
-from game.agents.personality_agent import PersonalityAgent
-from game.utils import smart_input
+from src.api import api
+from src.agents.cmd import CMDAgent
+from src.agents.personality import PersonalityAgent
+from src.utils import smart_input
 
 
 # Importing other modules
@@ -122,4 +122,4 @@ if __name__ == '__main__':
             ))
 
     # Start the game    
-    main(agents, verbose=False)
+    api(agents, verbose=False)

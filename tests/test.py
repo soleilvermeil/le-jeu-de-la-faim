@@ -5,8 +5,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 
 # Importing game module
-from game.agents.random_agent import RandomAgent
-from game.interface import main
+from src.api import api
+from src.agents.random import RandomAgent
 
 
 if __name__ == '__main__':
@@ -40,4 +40,4 @@ if __name__ == '__main__':
         RandomAgent("Zulu"),
     ]
     
-    main(agents, save_txt=True, save_tsv=True)
+    api(agents=agents, save_txt=True, save_tsv=True)
