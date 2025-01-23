@@ -10,7 +10,7 @@ from src.agents.random import RandomAgent
 
 
 if __name__ == '__main__':
-    
+
     agents = [
         RandomAgent("Alpha"),
         RandomAgent("Bravo"),
@@ -39,5 +39,5 @@ if __name__ == '__main__':
         RandomAgent("Yankee"),
         RandomAgent("Zulu"),
     ]
-    
+
     api(agents=agents, save_txt=True, save_tsv=True)

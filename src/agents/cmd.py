@@ -5,7 +5,7 @@ from ..utils import smart_input
 
 
 class CMDAgent(BaseAgent):
-    
+
     def __init__(self, name: str):
 
         # Initialize the parent class
@@ -44,7 +44,7 @@ class CMDAgent(BaseAgent):
 
         # Clear the console
         os.system("cls" if os.name == "nt" else "clear")
-        
+
         # Print to console the private message
         print(super().messages2str(self.current_state["characters"][self.name]["messages"]))
 

@@ -32,7 +32,7 @@ class Action(str, Enum):
     GO_EAST = "go east"
     GO_WEST = "go west"
     STAY = "stay"
-    
+
 
 class Response(BaseModel):
     # personal_situation_analysis: str = Field(description="The character's analysis of their personal situation, notably on their immediate needs.")
@@ -44,7 +44,7 @@ class Response(BaseModel):
 
 
 class LLMAgent(BaseAgent):
-    
+
     def __init__(
         self,
         name: str,
@@ -55,7 +55,7 @@ class LLMAgent(BaseAgent):
 
         # Initialize the parent class
         super().__init__(name)
-        
+
         # Create the client
         self.client = OpenAI(api_key=api_key)
 
@@ -93,14 +93,14 @@ class LLMAgent(BaseAgent):
             "content": new_user_message
         }
         whole_conversation = self.discussion + [payload_to_send]
-        
+
         # Send the current state to the model
         response = self.client.beta.chat.completions.parse(
             model="gpt-4o-mini",
             messages=whole_conversation,
             response_format=Response,
         )
-        
+
         # Update the history
         self.discussion.append(payload_to_send)
         self.discussion.append({
@@ -108,7 +108,7 @@ class LLMAgent(BaseAgent):
             "content": response.choices[0].message.content
         })
         self.parsed_response_history.append(response.choices[0].message.parsed)
-        
+
         # Format everything and write it to a file
         if self.verbose:
 
@@ -133,10 +133,10 @@ class LLMAgent(BaseAgent):
             #     json.dump(data, f, indent=4, ensure_ascii=False)
             with open(os.path.join("logs", f"log_{self.current_state['game']['id']}_{self.name}.yaml"), "w", encoding="utf8") as f:
                 yaml.dump(data, Dumper=LiteralDumper, default_flow_style=False, allow_unicode=True, stream=f, sort_keys=False)
-        
+
         # Return
         return response.choices[0].message.parsed.action
-    
+
 
     def inform_death(self) -> None:
 
@@ -156,10 +156,10 @@ class LLMAgent(BaseAgent):
             "role": "user",
             "content": new_user_message
         }
-                    
+
         # Update the history (only the user message)
         self.discussion.append(death_payload)
-        
+
         # Format everything and write it to a file
         if self.verbose:
 

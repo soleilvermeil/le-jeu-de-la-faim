@@ -93,7 +93,7 @@ def bootstrap(lst: list, iterations: int | Literal["inf"] = "inf") -> Dict[str, 
                 "std": exact_std,
             }
         return result
-    
+
     else:
 
         # Deprecation warning
@@ -112,7 +112,7 @@ def bootstrap(lst: list, iterations: int | Literal["inf"] = "inf") -> Dict[str, 
             # Add ratios to the dictionary
             for element in unique_lst:
                 sample_ratios[element].append(sample.count(element) / len_lst)
-        
+
         # Put data in the right format
         result = {
             element: {
@@ -120,7 +120,7 @@ def bootstrap(lst: list, iterations: int | Literal["inf"] = "inf") -> Dict[str, 
                 "std": std(sample_ratios[element]),
             } for element in unique_lst
         }
-        
+
         # Return
         return result
 
@@ -137,7 +137,7 @@ def smart_join(lst: List[str], sep: str = ", ", last_sep: str = " and ") -> str:
         return lst[0] + last_sep + lst[1]
     else:
         return sep.join(lst[:-1]) + last_sep + lst[-1]
-    
+
 
 def flatten_dict(dct: dict, sep: str = "_", parent_key: Any = "") -> dict:
     """
@@ -184,7 +184,7 @@ def transform_dict_values(dct: dict, transformations: Tuple[type, callable]) -> 
         for transformation in transformations:
             if isinstance(value, transformation[0]):
                 new_dct[key] = transformation[1](value)
-    
+
     return new_dct
 
 
@@ -202,7 +202,7 @@ def wrap_text(text, width=50):
     """
     if width <= 0:
         raise ValueError("Threshold must be greater than 0.")
-    
+
     if "\n" in text:
         return "\n".join(wrap_text(line, width) for line in text.split("\n"))
 
@@ -253,7 +253,7 @@ def smart_input(
     error_message: str = "Invalid input. Please try again.",
     default: Any | None = None,
 ) -> Any:
-    
+
     while True:
 
         # Get user input
@@ -278,13 +278,13 @@ def str2random(s: str, N: int) -> tuple:
     # Hash the string using SHA-256
     hash_object = hashlib.sha256(s.encode())
     hash_digest = hash_object.hexdigest()
-    
+
     # Convert the hash to an integer to use as a seed
     hash_int = int(hash_digest, 16)
-    
+
     # Seed the random number generator
     random.seed(hash_int)
-    
+
     # Generate N random floats in the range (0, 1)
     return tuple([random.random() for _ in range(N)])
 

@@ -1,5 +1,5 @@
 class Cell:
-    
+
     def __init__(
         self, name: str,
         icon: str,

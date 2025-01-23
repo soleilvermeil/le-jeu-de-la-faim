@@ -38,10 +38,10 @@ class Game:
         for character in self.__characters:
             character.set_game(self)
 
-        
+
     def get_alive_characters(self) -> List[Character]:
         return [character for character in self.__characters if character.alive]
-    
+
 
     def get_dead_characters(self) -> List[Character]:
         """
@@ -49,7 +49,7 @@ class Game:
         dead yet.
         """
         return [character for character in self.__characters if not character.alive]
-    
+
 
     def get_all_characters(self) -> List[Character]:
         return self.__characters
@@ -92,7 +92,7 @@ class Game:
 
 
     def start_game(self):
-        
+
         # Print the welcome message
         for channel in ["public", "debug"] + [c.name for c in self.__characters]:
             self.save_message(
@@ -107,7 +107,7 @@ class Game:
         for character in self.__characters:
             if not character.alive:
                 continue
-            
+
             # If the character is the only one alive, announce the victory
             # instead of asking for an action
             if len(self.get_alive_characters()) == 1 and character.alive:
@@ -197,7 +197,7 @@ class Game:
 
 
     def update_game(self):
-        
+
         # Resolve the first turn
         if self.day == 0:
             # Show time (manually)
@@ -221,15 +221,15 @@ class Game:
 
             # Update the game phase
             self.phase = "act"
-        
+
         # Resolve the actions
         elif self.phase == "act":
 
             # Show time
             self.__show_time_and_day()
-            
+
             if self.time == "night" and random_bool(EVENT_PROBABILITY):
-                
+
                 # Resolve hazard
                 hazard_region = self.__get_lowest_hype_region()
 
@@ -266,7 +266,7 @@ class Game:
         characters = [character for character in self.__characters if (character.position == position and character.alive)]
         random.shuffle(characters)
         return characters
-    
+
 
     def __resolve_first_turn(self):
         """
@@ -389,7 +389,7 @@ class Game:
                 channel="debug",
             )
             character.move(random.choice(["go north", "go south", "go west", "go east"]))
-        
+
 
     def __resolve_movements(self):
         """
@@ -426,7 +426,7 @@ class Game:
 
 
     def __get_cells_in_region(self, region: Literal["north", "south", "east", "west"]) -> List[Tuple[int, int]]:
-        
+
         # Get all cells
         all_cells: List[Tuple[int, int]] = list(itertools.product(range(-TERRAIN_RADIUS, TERRAIN_RADIUS + 1), repeat=2))
 
@@ -457,7 +457,7 @@ class Game:
 
 
     def __get_lowest_hype_region(self) -> Literal["north", "south", "east", "west"] | None:
-        
+
         # Define weight for each region
         region_weights: Dict[str, float] = {
             "north": 0,
@@ -492,7 +492,7 @@ class Game:
             else:
                 average_hype = 0
                 zone_weight = 0
-                
+
             region_weights[region] = zone_weight
             self.save_message(
                 "🔥🔥 Region {region} has {total_characters_in_hazard_zone} characters with an average hype of {average_hype:.2f} (weight = {zone_weight:.2f})",
@@ -504,7 +504,7 @@ class Game:
                 },
                 channel="debug",
             )
-        
+
         # Abort if no valid hazard zone is found
         if sum(list(region_weights.values())) == 0:
             self.save_message(
@@ -512,7 +512,7 @@ class Game:
                 channel="debug",
             )
             return None
-        
+
         # Return a random region based on the weights
         chosen_region = random.choices(
             list(region_weights.keys()),
@@ -548,7 +548,7 @@ class Game:
             hunting_characters = [character for character in characters_in_the_cell if character.get_action() == "hunt"]
             attacks: Dict[Character, Character] = {}
             for attacker in hunting_characters:
-                
+
                     # Each person in the same cell as the attacker has a chance
                     # to be attacked. But each potential target has a chance to
                     # not be detected by the attacker, based on the visibility
@@ -622,7 +622,7 @@ class Game:
                             fmt={"attacker": attacker.name, "attacked": attacked.name},
                             channel="debug",
                         )
-                
+
                 # If one of the characters is dead during the resolve, skip.
                 # More precisely: if the attacked died (and thus if the
                 # attacker is still alive), simply state that nobody was found.
@@ -636,7 +636,7 @@ class Game:
                         fmt={"attacker": attacker.name, "attacked": attacked.name},
                         channel="debug",
                     )
-                
+
                 # If the attacker died, simply skip.
                 else:
                     pass
@@ -654,8 +654,8 @@ class Game:
                         fmt={"attacked": attacked.name},
                         channel="debug",
                     )
-    
-    
+
+
     def __resolve_hazard(self, hazard_region: Literal["north", "south", "east", "west"]) -> None:
         """
         During the game, events can happen. Approximately half of the terrain
@@ -663,7 +663,7 @@ class Game:
         do not move out of the dangerous zone will be killed. Note that the
         event will focus regions where tributes have the lowest average hype.
         """
-        
+
         characters_in_hazard_region = self.__get_characters_in_region(region=hazard_region)
 
         for character in characters_in_hazard_region:
@@ -754,8 +754,8 @@ class Game:
                         fmt={"character": character.name},
                         channel="debug",
                     )
-    
-    
+
+
     def __show_time_and_day(self) -> str:
 
         if self.phase == "move":

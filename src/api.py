@@ -4,7 +4,7 @@ from typing import List, TypeVar, Any
 import pandas as pd  # only for logging
 from .engine import game
 from .utils import *
-from .agents.base import BaseAgent
+from .agents import BaseAgent
 
 
 # Define the type of the agent
@@ -61,7 +61,7 @@ def __save_tsv(game_, state_history) -> None:
         game_state = state["game"]
         for character in list(state["characters"].keys()):
             character_state = state["characters"][character]
-            
+
             flattened_game_state = flatten_dict({"game": game_state})
             flattened_game_state = transform_dict_values(
                 dct=flattened_game_state,
@@ -78,7 +78,7 @@ def __save_tsv(game_, state_history) -> None:
                     (str, lambda x: x if "\n" not in x else "<str>")
                 ]
             )
-            
+
             combined_state = {**flattened_game_state, **flattened_character_state}
 
             if not data:
@@ -104,7 +104,7 @@ def __return_leaderboard(game_, state_history) -> pd.DataFrame:
 
     # Check each state to get the alive characters, in reverse order
     for state in reversed(state_history):
-        
+
         alive_characters = state["game"]["state"]["alive_characters"]
         number_of_entries_in_leaderboard = len(leaderboard["character_name"])
 
@@ -129,7 +129,7 @@ def api(
     save_tsv: bool = False,
     return_leaderboard: bool = False,
 ) -> None | dict[str, Any]:
-    
+
     # Check that all agents are unique
     names = [agent.name for agent in agents]
     assert len(names) == len(unique(names)), "All agents must have unique names."
@@ -151,20 +151,20 @@ def api(
 
         # Save the state
         state_history.append(copy.deepcopy(state))
-        
+
         # Print the public messages
         if verbose:
             print(__str2border(""))
             print(__messages2str(state["debug"]["messages"]))
             print(__str2border(""))
-            
+
         # Send to all agents the state of the game
         for agent in agents:
 
             # If character has been dead last turn, skip
             if len(state_history) >= 2 and not state_history[-2]["characters"][agent.name]["state"]["alive"]:
                 continue
-            
+
             # Communicate the state of the game to the agent
             agent.give_state_of_game(state)
 
@@ -174,7 +174,7 @@ def api(
 
         # Ask each agent to make a decision
         for agent in agents:
-            
+
             # Check if still alive. If dead, do only inform about the death
             # if it has not been done already. If still alive, ask for a
             # decision.
@@ -201,7 +201,7 @@ def api(
     # Save the game log
     if save_txt:
         __save_txt(game_, state_history)
-        
+
     # Save the full state history
     if save_tsv:
         __save_tsv(game_, state_history)

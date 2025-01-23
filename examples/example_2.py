@@ -47,7 +47,7 @@ if __name__ == '__main__':
             "hostility": HIGH,
         }
     }
-    
+
     # Define agents names
     AGENT_NAMES = [
         "Alpha",
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     for name, model in personnalities.items():
         print(f"{name} is {model}")
 
-    # Create agents    
+    # Create agents
     agents = [
         PersonalityAgent(
             name=name,

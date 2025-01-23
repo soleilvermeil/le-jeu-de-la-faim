@@ -15,7 +15,7 @@ import dotenv
 
 
 if __name__ == '__main__':
-    
+
     # Get API key from OpenAI
     dotenv.load_dotenv()
     API_KEY = os.environ.get("OPENAI_API_KEY")
@@ -78,5 +78,5 @@ if __name__ == '__main__':
         RandomAgent("Yankee"),
         RandomAgent("Zulu"),
     ]
-    
+
     api(agents, save_txt=True)

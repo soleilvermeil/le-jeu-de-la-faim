@@ -47,7 +47,7 @@ if __name__ == '__main__':
                 blocks.append("")
             blocks[-1] += line
     print(f"Found {len(blocks)} blocks")
-            
+
     # Get API key from OpenAI
     dotenv.load_dotenv()
     API_KEY = os.environ.get("OPENAI_API_KEY")
@@ -108,7 +108,7 @@ if __name__ == '__main__':
         })
         completion = client.beta.chat.completions.parse(model="gpt-4o", messages=messages, response_format=Response)
         response = completion.choices[0].message.parsed
-        
+
         # Print the block
         print(block, file=f)
 
@@ -118,10 +118,10 @@ if __name__ == '__main__':
             message = message.replace("\n", " ")
             print(f"- [{step.host}] ({step.emotion}) {message}", file=f)
         print(file=f)
-        
+
         # Add the response to the messages
         messages.append({
             "role": "assistant",
             "content": completion.choices[0].message.content.replace("\n", " "),
         })
-        
+

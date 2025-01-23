@@ -16,7 +16,7 @@ class PersonalityAgent(BaseAgent):
 
         # Initialize the parent class
         super().__init__(name)
-        
+
         # Save the personality-specific values
         self.resilience = resilience
         self.hostility = hostility
@@ -43,7 +43,7 @@ class PersonalityAgent(BaseAgent):
                     map_range(hostility - resilience, -1, 1, 1, 0)
                 ]
             )[0]
-        
+
         elif self.current_state["game"]["state"]["phase"] == "move":
 
             # Get the current position of the character
@@ -77,7 +77,7 @@ class PersonalityAgent(BaseAgent):
                 map_range(hostility - resilience, -1, 1, 1, 0),
                 map_range(hostility - resilience, -1, 1, 0, 1)
             ])[0]
-        
+
         else:
 
             # Get the current state of the character

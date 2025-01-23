@@ -15,7 +15,7 @@ from typing import List, Tuple
 
 
 if __name__ == '__main__':
-    
+
     # Define numerical values
     HIGH = 0.8
     UNSPECIFIED = 0.5
@@ -96,7 +96,7 @@ if __name__ == '__main__':
         error_message="Invalid gender. Please enter 'm' or 'f'.",
         default="f",
     )]
-    
+
     # Create agents
     agents = []
     for key, value in tributes.items():
@@ -120,5 +120,5 @@ if __name__ == '__main__':
                 resilience=value["personality"]["resilience"],
             ))
 
-    # Start the game    
+    # Start the game
     api(agents, verbose=False)
