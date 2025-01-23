@@ -180,7 +180,7 @@ class Game:
             "characters": {
                 c.name: {
                     "name": c.name,
-                    "state": c.to_dict(),
+                    "state": c.get_state(),
                     "messages": self.private_messages[c.name]
                 } for c in self.__characters
             },
