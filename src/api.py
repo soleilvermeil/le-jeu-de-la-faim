@@ -3,7 +3,7 @@ import os
 from typing import List, TypeVar, Any
 import pandas as pd  # only for logging
 from .engine import game
-from .utils import *
+from .shared import utils
 from .agents import BaseAgent
 
 
@@ -62,16 +62,16 @@ def __save_tsv(game_, state_history) -> None:
         for character in list(state["characters"].keys()):
             character_state = state["characters"][character]
 
-            flattened_game_state = flatten_dict({"game": game_state})
-            flattened_game_state = transform_dict_values(
+            flattened_game_state = utils.flatten_dict({"game": game_state})
+            flattened_game_state = utils.transform_dict_values(
                 dct=flattened_game_state,
                 transformations=[
                     (list, lambda x: "<list>"),
                     (str, lambda x: x if "\n" not in x else "<str>")
                 ]
             )
-            flattened_character_state = flatten_dict({"character": character_state})
-            flattened_character_state = transform_dict_values(
+            flattened_character_state = utils.flatten_dict({"character": character_state})
+            flattened_character_state = utils.transform_dict_values(
                 dct=flattened_character_state,
                 transformations=[
                     (list, lambda x: "<list>"),
@@ -132,7 +132,7 @@ def api(
 
     # Check that all agents are unique
     names = [agent.name for agent in agents]
-    assert len(names) == len(unique(names)), "All agents must have unique names."
+    assert len(names) == len(utils.unique(names)), "All agents must have unique names."
 
     # Create the game object
     game_ = game.Game(character_names=[agent.name for agent in agents], map_name=map_name)
@@ -194,7 +194,7 @@ def api(
 
     # Print the winner
     if verbose:
-        print("Game over! Winner is " + smart_join(lst=[c.name for c in game_.get_alive_characters()], sep=", ", last_sep=" and ") + "!")
+        print("Game over! Winner is " + utils.smart_join(lst=[c.name for c in game_.get_alive_characters()], sep=", ", last_sep=" and ") + "!")
 
     values_to_return: dict[str, Any] = {}
 
