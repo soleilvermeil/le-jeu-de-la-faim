@@ -7,7 +7,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 # Importing game module
 from src.api import api
 from src.agents.cmd import CMDAgent, PersonalityAgent
-from src.utils import smart_input
+from src.shared import utils
 
 
 # Importing other modules
@@ -78,19 +78,19 @@ if __name__ == '__main__':
     }
 
     # Get user input
-    name = smart_input(
+    name = utils.smart_input(
         prompt="Enter your name: ",
         validator=lambda x: x,
         error_message="Invalid name. Please try again.",
         default="Katniss",
     )
-    district = int(smart_input(
+    district = int(utils.smart_input(
         prompt="Enter your district number (1-12): ",
         validator=lambda x: x.isdigit() and 1 <= int(x) <= 12,
         error_message="Invalid district number. Please enter a number between 1 and 12.",
         default=12,
     ))
-    gender = {"m": "male", "f": "female"}[smart_input(
+    gender = {"m": "male", "f": "female"}[utils.Anysmart_input(
         prompt="Are you male or female? (m/f): ",
         validator=lambda x: x in ["m", "f"],
         error_message="Invalid gender. Please enter 'm' or 'f'.",

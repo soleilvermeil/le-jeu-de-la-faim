@@ -1,7 +1,7 @@
-from .base import BaseAgent
 import os
 import re
-from ..utils import smart_input
+from .base import BaseAgent
+from ..shared import utils
 
 
 class CMDAgent(BaseAgent):
@@ -29,7 +29,7 @@ class CMDAgent(BaseAgent):
         print(super().messages2str(self.current_state["characters"][self.name]["messages"]))
 
         # Ask the user to input an action
-        action = smart_input(
+        action = utils.smart_input(
             prompt=f"Your action ({', '.join(possible_actions)}): ",
             validator=lambda x: x in possible_actions,
             error_message="Invalid action. Please try again.",

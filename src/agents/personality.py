@@ -1,9 +1,7 @@
-from .base import BaseAgent
 import random
+from .base import BaseAgent
 from ..engine import constants
-from ..utils import map_range
-from rich.traceback import install
-install()
+from ..shared import utils
 
 
 class PersonalityAgent(BaseAgent):
@@ -39,8 +37,8 @@ class PersonalityAgent(BaseAgent):
             return random.choices(
                 ["run towards", "run away"],
                 weights=[
-                    map_range(hostility - resilience, -1, 1, 0, 1),
-                    map_range(hostility - resilience, -1, 1, 1, 0)
+                    utils.map_range(hostility - resilience, -1, 1, 0, 1),
+                    utils.map_range(hostility - resilience, -1, 1, 1, 0)
                 ]
             )[0]
 
@@ -74,8 +72,8 @@ class PersonalityAgent(BaseAgent):
                 random.choice(directions_away_from_cornucopia),
                 random.choice(directions_towards_cornucopia),
             ], weights=[
-                map_range(hostility - resilience, -1, 1, 1, 0),
-                map_range(hostility - resilience, -1, 1, 0, 1)
+                utils.map_range(hostility - resilience, -1, 1, 1, 0),
+                utils.map_range(hostility - resilience, -1, 1, 0, 1)
             ])[0]
 
         else:
@@ -89,9 +87,9 @@ class PersonalityAgent(BaseAgent):
             return random.choices(
                 ["hunt", "gather", "rest", "hide"],
                 weights=[
-                    1.0 * map_range(hostility, 0, 1, 0, 1),
-                    1.0 * map_range(resilience, 0, 1, 0, 1) * max(map_range(hunger, 0, constants.MAX_HUNGER, 1, 0), map_range(thirst, 0, constants.MAX_THIRST, 1, 0)),
-                    0.5 * map_range(resilience, 0, 1, 1, 0) * map_range(energy, 0, constants.MAX_ENERGY, 1, 0),
-                    0.5 * map_range(hostility - resilience, -1, 1, 1, 0),
+                    1.0 * utils.map_range(hostility, 0, 1, 0, 1),
+                    1.0 * utils.map_range(resilience, 0, 1, 0, 1) * max(utils.map_range(hunger, 0, constants.MAX_HUNGER, 1, 0), utils.map_range(thirst, 0, constants.MAX_THIRST, 1, 0)),
+                    0.5 * utils.map_range(resilience, 0, 1, 1, 0) * utils.map_range(energy, 0, constants.MAX_ENERGY, 1, 0),
+                    0.5 * utils.map_range(hostility - resilience, -1, 1, 1, 0),
                 ]
             )[0]

@@ -1,7 +1,7 @@
-from .base import BaseAgent
 import random
-from ..utils import random_bool
+from .base import BaseAgent
 from ..engine import constants
+from ..shared.utils import random_bool
 
 
 class RandomAgent(BaseAgent):

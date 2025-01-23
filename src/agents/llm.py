@@ -1,20 +1,20 @@
-from .base import BaseAgent
-from openai import OpenAI
-import json
 import os
+import json
 import yaml
-from ..utils import *
+from openai import OpenAI
 from pydantic import BaseModel, Field
 from enum import Enum
+from .base import BaseAgent
+from ..shared import utils
 
 
 # Custom YAML dumper to handle multiline strings
 class LiteralDumper(yaml.SafeDumper):
     pass
 def str_presenter(dumper, data):
-    data = wrap_text(data, width=80)
+    data = utils.wrap_text(data, width=80)
     if '\n' in data:
-        data = replace_all(data, ' \n', '\n')
+        data = utils.replace_all(data, ' \n', '\n')
         return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
     return dumper.represent_scalar('tag:yaml.org,2002:str', data)
 LiteralDumper.add_representer(str, str_presenter)
