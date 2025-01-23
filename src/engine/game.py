@@ -37,14 +37,14 @@ class Game:
         for character in self.__characters:
             character.set_game(self)
 
-        
+
     def get_alive_characters(self, as_list: bool = False) -> list[Character]:
         # NOTE: The following optimization had actually no huge impact :(
         if not as_list:
             return filter(lambda character: character.alive, self.__characters)
         elif as_list:
             return [character for character in self.__characters if character.alive]
-    
+
 
     def get_alive_characters(self) -> list[Character]:
         return [character for character in self.__characters if character.alive]
@@ -70,7 +70,7 @@ class Game:
         emphasis: bool = False,
         fmt: dict[str, str] = {}
     ) -> None:
-        
+
         if self.__headless:
             return
 
