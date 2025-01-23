@@ -520,7 +520,7 @@ class Character:
         # having no winner at all. TODO: this is a temporary fix, because the
         # actor playing this character might wonder why their character does
         # not die, for example if they were starving previous turn.
-        alive_characters = [c for c in self.__game.get_alive_characters()]
+        alive_characters = self.__game.get_alive_characters(as_list=True)
         if len(alive_characters) == 1:
             return
 
