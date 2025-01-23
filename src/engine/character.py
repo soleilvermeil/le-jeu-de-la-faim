@@ -50,6 +50,7 @@ class Character:
         Returns a flat dictionary (i.e. all values are either strings,
         integers, floats or booleans) representing the character.
         """
+        best_weapon = self.get_best_weapon()  # Slight optimization
         return {
             "alive": self.alive, # bool
             "health": self.health, # int
@@ -64,8 +65,8 @@ class Character:
             "y": self.position[1], # int
             "bag_food": self.bag.food, # int
             "bag_water": self.bag.water, # int
-            "bag_best_weapon_name": self.get_best_weapon().name, # str
-            "bag_best_weapon_damage": self.get_best_weapon().damage, # int
+            "bag_best_weapon_name": best_weapon.name, # str
+            "bag_best_weapon_damage": best_weapon.damage, # int
             "bag_weapons_count": len(self.bag.weapons), # int
             "stats_kills": self.statistics["kills"], # int
             "stats_gifts_received": self.statistics["gifts_received"], # int
