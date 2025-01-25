@@ -266,7 +266,7 @@ class PersonalityAgent(BaseAgent):
         has_weapon_coef = 1 if self.current_state["characters"][self.name]["state"]["bag_weapons_count"] > 0 else 0
 
         if day == 0:
-            run_towards_weight = self.__aggregate_factors([hostility, impulsivity], [resilience])
+            run_towards_weight = self.__aggregate_factors([hostility, impulsivity, resilience], [])
             run_away_weight = self.__aggregate_factors([resilience], [hostility, impulsivity])
             return random.choices(
                 ["run towards", "run away"],
@@ -274,8 +274,8 @@ class PersonalityAgent(BaseAgent):
             )[0]
 
         elif phase == "move":
-            move_towards_weight = self.__aggregate_factors([], [has_weapon_coef])
-            move_away_weight = self.__aggregate_factors([resilience], [])
+            move_towards_weight = self.__aggregate_factors([hostility, resilience, needs_resources_coef], [impulsivity, has_weapon_coef])
+            move_away_weight = self.__aggregate_factors([impulsivity, resilience, impulsivity, has_weapon_coef, needs_resources_coef], [hostility])
             return random.choices(
                 [
                     random.choice(self.__get_directions("towards")),
@@ -285,10 +285,10 @@ class PersonalityAgent(BaseAgent):
             )[0]
 
         elif phase == "act":
-            hunt_weight = self.__aggregate_factors([hostility, has_weapon_coef], [])
-            gather_weight = self.__aggregate_factors([resilience, needs_resources_coef], [impulsivity])
-            rest_weight = self.__aggregate_factors([is_night_coef], [impulsivity]) * 0.5
-            hide_weight = self.__aggregate_factors([], [impulsivity]) * 0.5
+            hunt_weight = self.__aggregate_factors([hostility, impulsivity, has_weapon_coef], [needs_resources_coef])
+            gather_weight = self.__aggregate_factors([resilience, needs_resources_coef], [impulsivity, hostility, is_night_coef])
+            rest_weight = self.__aggregate_factors([is_night_coef], [impulsivity, hostility]) * 0.5
+            hide_weight = self.__aggregate_factors([resilience], [has_weapon_coef, hostility, impulsivity]) * 0.5
             return random.choices(
                 ["hunt", "gather", "rest", "hide"],
                 weights=[hunt_weight, gather_weight, rest_weight, hide_weight],
