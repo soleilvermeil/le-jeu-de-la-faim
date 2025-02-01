@@ -275,7 +275,7 @@ class PersonalityAgent(BaseAgent):
 
         elif phase == "move":
             move_towards_weight = self.__aggregate_factors([hostility, resilience, needs_resources_coef], [impulsivity, has_weapon_coef])
-            move_away_weight = self.__aggregate_factors([impulsivity, resilience, impulsivity, has_weapon_coef, needs_resources_coef], [hostility])
+            move_away_weight = self.__aggregate_factors([resilience, impulsivity, has_weapon_coef, needs_resources_coef], [hostility])
             return random.choices(
                 [
                     random.choice(self.__get_directions("towards")),
@@ -286,8 +286,8 @@ class PersonalityAgent(BaseAgent):
 
         elif phase == "act":
             hunt_weight = self.__aggregate_factors([hostility, impulsivity, has_weapon_coef], [needs_resources_coef])
-            gather_weight = self.__aggregate_factors([resilience, needs_resources_coef], [impulsivity, hostility, is_night_coef])
-            rest_weight = self.__aggregate_factors([is_night_coef], [impulsivity, hostility]) * 0.5
+            gather_weight = self.__aggregate_factors([resilience, needs_resources_coef], [impulsivity, is_night_coef])
+            rest_weight = self.__aggregate_factors([is_night_coef], [impulsivity]) * 0.5
             hide_weight = self.__aggregate_factors([resilience], [has_weapon_coef, hostility, impulsivity]) * 0.5
             return random.choices(
                 ["hunt", "gather", "rest", "hide"],

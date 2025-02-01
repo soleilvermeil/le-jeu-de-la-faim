@@ -26,26 +26,32 @@ if __name__ == '__main__':
         "ruthless/cold-blooded": {
             "resilience": UNSPECIFIED,
             "hostility": HIGH,
+            "impulsivity": LOW,
         },
         "strategic/cunning": {
             "resilience": HIGH,
             "hostility": UNSPECIFIED,
+            "impulsivity": LOW,
         },
         "noble/heroic": {
             "resilience": UNSPECIFIED,
             "hostility": LOW,
+            "impulsivity": HIGH,
         },
         "terrified/timid": {
-            "resilience": HIGH,
+            "resilience": LOW,
             "hostility": LOW,
+            "impulsivity": UNSPECIFIED,
         },
         "manipulative/charismatic": {
             "resilience": UNSPECIFIED,
             "hostility": UNSPECIFIED,
+            "impulsivity": UNSPECIFIED,
         },
         "unhinged/vengeful": {
             "resilience": HIGH,
             "hostility": HIGH,
+            "impulsivity": HIGH,
         }
     }
 
