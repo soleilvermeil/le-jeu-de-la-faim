@@ -16,35 +16,53 @@ import random
 if __name__ == '__main__':
 
     # Define numerical values
-    HIGH = 0.8
-    UNSPECIFIED = 0.5
-    LOW = 0.2
+    HIGH = 0.9
+    AVERAGE_HIGH = 0.7
+    AVERAGE = 0.5
+    AVERAGE_LOW = 0.3
+    LOW = 0.1
 
     # Define personalities
     PERSONNALITIES = {
-        "ruthless/cold-blooded": {
-            "resilience": UNSPECIFIED,
+        "cruel": {
+            "resilience": AVERAGE,
             "hostility": HIGH,
+            "impulsivity": HIGH,
         },
-        "strategic/cunning": {
+        "sadistic": {
+            "resilience": AVERAGE_LOW,
+            "hostility": HIGH,
+            "impulsivity": AVERAGE_HIGH,
+        },
+        "strategic": {
             "resilience": HIGH,
-            "hostility": UNSPECIFIED,
+            "hostility": AVERAGE,
+            "impulsivity": LOW,
         },
-        "noble/heroic": {
-            "resilience": UNSPECIFIED,
+        "noble": {
+            "resilience": AVERAGE_HIGH,
             "hostility": LOW,
+            "impulsivity": AVERAGE,
         },
-        "terrified/timid": {
-            "resilience": HIGH,
+        "terrified": {
+            "resilience": LOW,
             "hostility": LOW,
+            "impulsivity": HIGH,
         },
-        "manipulative/charismatic": {
-            "resilience": UNSPECIFIED,
-            "hostility": UNSPECIFIED,
+        "charismatic": {
+            "resilience": AVERAGE,
+            "hostility": AVERAGE_LOW,
+            "impulsivity": AVERAGE_LOW,
         },
-        "unhinged/vengeful": {
+        "vengeful": {
             "resilience": HIGH,
             "hostility": HIGH,
+            "impulsivity": AVERAGE_HIGH,
+        },
+        "depressed": {
+            "resilience": LOW,
+            "hostility": LOW,
+            "impulsivity": LOW,
         }
     }
 

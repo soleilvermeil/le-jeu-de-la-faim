@@ -1,17 +1,32 @@
+# Player
 MAX_HEALTH = 10
 MAX_MENTAL = 2
 MAX_ENERGY = 2
-MAX_HUNGER = 10
-MAX_THIRST = 5
+MAX_HUNGER = 5
+MAX_THIRST = 3
 MAX_HYPE = 100
-TERRAIN_RADIUS = 1
+
+# Map and game
+TERRAIN_RADIUS = 2
+NIGHT_PROBABILITY_FACTOR = 0.7
+
+# Hunt
 HUNT_SUCCESS_PROBABILITY = 0.7
+FLEE_PROBABILITY = 0.7
+
+# Gather
 RESOURCE_GATHER_PROBA_WHILE_GATHERING = 0.9
 MIN_RESOURCES_WHILE_GATHERING = 1
 MAX_RESOURCES_WHILE_GATHERING = 3
+WEAPON_GATHER_PROBA_WHILE_GATHERING = 0.2
+
+# Hiding
 RESOURCE_GATHER_PROBA_WHILE_HIDING = 0.1
 MIN_RESOURCES_WHILE_HIDING = 1
 MAX_RESOURCES_WHILE_HIDING = 2
+WEAPON_GATHER_PROBA_WHILE_HIDING = 0.2
+
+# Weapons
 WEAPONS = [
     ("a trident", 5),
     ("a bow", 5),
@@ -32,22 +47,25 @@ NATURE_WEAPONS = [
     ("a stone", 2),
     ("a piece of wood", 2),
 ]
-WEAPON_GATHER_PROBA_WHILE_GATHERING = 0.2
-WEAPON_GATHER_PROBA_WHILE_HIDING = 0.2
-FLEE_PROBABILITY = 0.7
-NIGHT_PROBABILITY_FACTOR = 0.7
+
+# Events
+EVENT_PROBABILITY = 1.0
+EVENT_REGION_WIDTH = 1
 EVENT_FLEE_PROBABILITY = 0.8
-EVENT_PROBABILITY = 0.5
+
+# Hype
 HYPE_WHEN_KILLING = 30   # in previous version : 30
 HYPE_WHEN_ATTACKING = 20 # in previous version : 20
-HYPE_WHEN_HUNTING = 0   # in previous version : 10
+HYPE_WHEN_HUNTING = 0   # in previous version : 0
 HYPE_WHEN_ATTACKED = 20  # in previous version : 20
 HYPE_WHEN_GATHERING = 0  # in previous version : 0
 HYPE_WHEN_RESTING = -10  # in previous version : -10
 HYPE_WHEN_HIDING = -30   # in previous version : -30
 GIFT_FOOD = 1
 GIFT_WATER = 1
-GIFT_HEALTH = 3
+GIFT_HEALTH = 5
+
+# Tips
 TIPS = [
     # Real tips:
     "Resources are harder to find at night...",
@@ -76,6 +94,8 @@ TIPS = [
     "Fight for your life, but never forget, the Capitol controls your fate.",
     "This is your moment; make the Capitol's watchers remember you forever.",
 ]
+
+# Personalities
 PERSONNALITIES = [
     ("ruthless/cold-blooded", "You are trained for combat, aggressive, have a lack of empathy for weaker tributes."),
     ("strategic/cunning", "You utilize intellect, deception, and charm rather than brute force."),

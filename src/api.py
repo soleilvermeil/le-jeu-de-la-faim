@@ -208,8 +208,6 @@ def api(
     if verbose:
         print("Game over! Winner is " + utils.smart_join(lst=[c.name for c in game_.get_alive_characters()], sep=", ", last_sep=" and ") + "!")
 
-    print(f"Number of states: {len(state_history)}")
-
     values_to_return: dict[str, Any] = {}
 
     # Save the game log

@@ -10,8 +10,9 @@ class PersonalityAgent(BaseAgent):
     def __init__(
         self,
         name: str,
-        hostility: float,
         resilience: float,
+        hostility: float,
+        impulsivity: float,
     ):
 
         # Initialize the parent class
@@ -20,6 +21,7 @@ class PersonalityAgent(BaseAgent):
         # Save the personality-specific values
         self.resilience = resilience
         self.hostility = hostility
+        self.impulsivity = impulsivity
 
 
     def __get_directions(
@@ -58,7 +60,23 @@ class PersonalityAgent(BaseAgent):
             raise ValueError(f"Unknown value for `which`: {which}")
 
 
-    def interrogate_deprecated(self) -> str:
+    def __aggregate_factors(self, proportional_to: list[float], antiproportional_to: list[float]) -> float:
+        """
+        Aggregate factors and computes a value that should be proportional to
+        the sum of the factors in `proportional_to` and antiproportional to the
+        sum of the factors in `antiproportional_to`. All factors should be in
+        the range [0, 1].
+        """
+        return utils.map_range(
+            sum(proportional_to) - sum(antiproportional_to),
+            -len(antiproportional_to),
+            len(proportional_to),
+            0,
+            1,
+        )
+
+
+    def interrogate_v1(self) -> str:
         """
         Ask the LLM to chose an action based on the current state of the game,
         which has been given to it by the `give_state_of_game` method.
@@ -67,6 +85,7 @@ class PersonalityAgent(BaseAgent):
         # Easy access to the resilience and hostility
         resilience = self.resilience
         hostility = self.hostility
+
 
         if self.current_state["game"]["state"]["day"] == 0:
 
@@ -133,7 +152,7 @@ class PersonalityAgent(BaseAgent):
             )[0]
 
 
-    def interrogate(self) -> str:
+    def interrogate_v2(self) -> str:
 
         """
         Ask the LLM to chose an action based on the current state of the game,
@@ -227,3 +246,56 @@ class PersonalityAgent(BaseAgent):
                     ["hunt", "rest", "hide"],
                     weights=[hunt_factor, rest_factor, hide_factor]
                 )[0]
+
+
+    def interrogate_v3(self) -> str:
+
+        # Easy access to the personality values
+        resilience = self.resilience
+        hostility = self.hostility
+        impulsivity = self.impulsivity
+        day = self.current_state["game"]["state"]["day"]
+        time = self.current_state["game"]["state"]["time"]
+        phase = self.current_state["game"]["state"]["phase"]
+
+        # Compute some useful coefficients
+        needs_food_coef = utils.map_range(self.current_state["characters"][self.name]["state"]["hunger"], 0, constants.MAX_HUNGER, 1, 0)
+        needs_water_coef = utils.map_range(self.current_state["characters"][self.name]["state"]["thirst"], 0, constants.MAX_THIRST, 1, 0)
+        needs_resources_coef = max(needs_food_coef, needs_water_coef)
+        is_night_coef = 1 if time == "night" else 0
+        has_weapon_coef = 1 if self.current_state["characters"][self.name]["state"]["bag_weapons_count"] > 0 else 0
+
+        if day == 0:
+            run_towards_weight = self.__aggregate_factors([hostility, impulsivity, resilience], [])
+            run_away_weight = self.__aggregate_factors([resilience], [hostility, impulsivity])
+            return random.choices(
+                ["run towards", "run away"],
+                weights=[run_towards_weight, run_away_weight],
+            )[0]
+
+        elif phase == "move":
+            move_towards_weight = self.__aggregate_factors([hostility, resilience, needs_resources_coef], [impulsivity, has_weapon_coef])
+            move_away_weight = self.__aggregate_factors([resilience, impulsivity, has_weapon_coef, needs_resources_coef], [hostility])
+            return random.choices(
+                [
+                    random.choice(self.__get_directions("towards")),
+                    random.choice(self.__get_directions("away")),
+                ],
+                weights=[move_towards_weight, move_away_weight],
+            )[0]
+
+        elif phase == "act":
+            hunt_weight = self.__aggregate_factors([hostility, impulsivity, has_weapon_coef], [needs_resources_coef])
+            gather_weight = self.__aggregate_factors([resilience, needs_resources_coef], [impulsivity, is_night_coef])
+            rest_weight = self.__aggregate_factors([is_night_coef], [impulsivity]) * 0.5
+            hide_weight = self.__aggregate_factors([resilience], [has_weapon_coef, hostility, impulsivity]) * 0.5
+            return random.choices(
+                ["hunt", "gather", "rest", "hide"],
+                weights=[hunt_weight, gather_weight, rest_weight, hide_weight],
+            )[0]
+
+
+
+
+    def interrogate(self) -> str:
+        return self.interrogate_v3()
