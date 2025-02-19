@@ -241,10 +241,10 @@ class Game:
             if self.time == "night" and random_bool(EVENT_PROBABILITY):
 
                 # Resolve hazard
-                hazard_region = self.__get_lowest_hype_region()
+                hazard_region = self.__get_lowest_hype_region(width=EVENT_REGION_WIDTH)
 
                 if hazard_region is not None:
-                    characters_in_hazard_region = self.__get_characters_in_region(region=hazard_region)
+                    characters_in_hazard_region = self.__get_characters_in_region(region=hazard_region, width=EVENT_REGION_WIDTH)
                     characters_outside_hazard_region = [c for c in self.get_alive_characters() if c not in characters_in_hazard_region]
                     self.__resolve_actions(characters_subset=characters_outside_hazard_region)
                     self.__resolve_hazard(hazard_region=hazard_region)
@@ -435,28 +435,36 @@ class Game:
                 )
 
 
-    def __get_cells_in_region(self, region: Literal["north", "south", "east", "west"]) -> list[tuple[int, int]]:
+    def __get_cells_in_region(
+        self,
+        region: Literal["north", "south", "east", "west"],
+        width: int = TERRAIN_RADIUS,
+    ) -> list[tuple[int, int]]:
 
         # Get all cells
         all_cells: list[tuple[int, int]] = list(itertools.product(range(-TERRAIN_RADIUS, TERRAIN_RADIUS + 1), repeat=2))
 
         # Filter cells based on region and return
         if region == "north":
-            return [c for c in all_cells if c[1] > 0]
+            return [c for c in all_cells if c[1] > TERRAIN_RADIUS - width]
         elif region == "south":
-            return [c for c in all_cells if c[1] < 0]
+            return [c for c in all_cells if c[1] < TERRAIN_RADIUS - width]
         elif region == "east":
-            return [c for c in all_cells if c[0] < 0]
+            return [c for c in all_cells if c[0] < TERRAIN_RADIUS - width]
         elif region == "west":
-            return [c for c in all_cells if c[0] > 0]
+            return [c for c in all_cells if c[0] > TERRAIN_RADIUS - width]
         else:
             raise ValueError("Region must be one of 'north', 'south', 'east', 'west'")
 
 
-    def __get_characters_in_region(self, region: Literal["north", "south", "east", "west"]) -> list[Character]:
+    def __get_characters_in_region(
+        self,
+        region: Literal["north", "south", "east", "west"],
+        width: int = TERRAIN_RADIUS,
+    ) -> list[Character]:
 
         # Get cells in region
-        cells_in_region = self.__get_cells_in_region(region=region)
+        cells_in_region = self.__get_cells_in_region(region=region, width=width)
 
         # Filter characters based on cells and return
         characters_in_region = [
@@ -466,7 +474,10 @@ class Game:
         return characters_in_region
 
 
-    def __get_lowest_hype_region(self) -> Literal["north", "south", "east", "west"] | None:
+    def __get_lowest_hype_region(
+        self,
+        width: int = TERRAIN_RADIUS,
+    ) -> Literal["north", "south", "east", "west"] | None:
 
         # Define weight for each region
         region_weights: dict[str, float] = {
@@ -479,7 +490,7 @@ class Game:
         for region in ["north", "south", "east", "west"]:
 
             # Get infos useful for later
-            characters_in_region = self.__get_characters_in_region(region=region)
+            characters_in_region = self.__get_characters_in_region(region=region, width=width)
             total_characters_in_region = len(characters_in_region)
             sum_of_hypes = sum([c.hype for c in characters_in_region])
 
@@ -674,7 +685,7 @@ class Game:
         event will focus regions where tributes have the lowest average hype.
         """
 
-        characters_in_hazard_region = self.__get_characters_in_region(region=hazard_region)
+        characters_in_hazard_region = self.__get_characters_in_region(region=hazard_region, width=EVENT_REGION_WIDTH)
 
         for character in characters_in_hazard_region:
             self.save_message("🔥🔥 A deadly event is occuring", channel=character.name)
@@ -712,7 +723,7 @@ class Game:
 
         # Kill characters that are still in the hazard zone
         for character in characters_in_hazard_region:
-            if character.position in self.__get_characters_in_region(hazard_region):
+            if character.position in self.__get_cells_in_region(hazard_region, width=EVENT_REGION_WIDTH):
                 character.alive = False
                 character.statistics["cause_of_death"] = "hazard"
                 self.save_message(
