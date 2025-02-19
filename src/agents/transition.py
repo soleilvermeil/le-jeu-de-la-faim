@@ -3,7 +3,7 @@ from typing import Literal
 from .base import BaseAgent
 from ..engine import constants
 from ..shared import utils
-from math import ln, exp
+from math import log, exp
 
 class TransitionAgent(BaseAgent):
 
@@ -31,11 +31,11 @@ class TransitionAgent(BaseAgent):
 
 
     def resilience(self, t: int | float) -> float:
-        return self.resilience_end + (self.resilience_begin - self.resilience_end) * exp(-t / self.resilience_halflife * ln(2))
+        return self.resilience_end + (self.resilience_begin - self.resilience_end) * exp(-t / self.resilience_halflife * log(2))
 
 
     def hostility(self, t: int | float) -> float:
-        return self.hostility_end + (self.hostility_begin - self.hostility_end) * exp(-t / self.hostility_halflife * ln(2))
+        return self.hostility_end + (self.hostility_begin - self.hostility_end) * exp(-t / self.hostility_halflife * log(2))
 
 
     def __get_directions(
