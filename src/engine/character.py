@@ -420,12 +420,18 @@ class Character:
                 water = resources - food
                 food *= self.__game.map_.cells[self.position].food_multiplier
                 water *= self.__game.map_.cells[self.position].water_multiplier
+                food = round(food)
+                water = round(water)
+                self.bag.food += food
+                self.bag.water += water
                 if food > 0 and water > 0:
-                    self.__game.save_message("👻🍒 You found some food while hiding", channel=self.name)
-                elif food > 0 and water == 0:
-                    self.__game.save_message("👻💧 You found some water while hiding", channel=self.name)
-                elif food == 0 and water > 0:
                     self.__game.save_message("👻🌾 You found some food and water while hiding", channel=self.name)
+                elif food > 0 and water == 0:
+                    self.__game.save_message("👻🍒 You found some food while hiding", channel=self.name)
+                elif food == 0 and water > 0:
+                    self.__game.save_message("👻💧 You found some water while hiding", channel=self.name)
+                else:
+                    self.__game.save_message("👻❌ You found nothing while hiding", channel=self.name)
                 self.__game.save_message("👻✅ {character} found {food} food and {water} water while hiding".format(character=self.name, food=food, water=water), channel="debug")
 
             # If a weapon is found instead
