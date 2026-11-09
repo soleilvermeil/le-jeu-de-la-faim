@@ -215,7 +215,7 @@ class Character:
         # If `show` is True, print a message to the character's channel
         if value / MAX_HYPE >= 0.3 and show:
             self.__game.save_message("🎉✅ Sponsors loved that", channel=self.name)
-        if value / MAX_HYPE >= 0.2 and show:
+        elif value / MAX_HYPE >= 0.2 and show:
             self.__game.save_message("🎉✅ Sponsors liked that", channel=self.name)
         elif value / MAX_HYPE >= 0.1 and show:
             self.__game.save_message("🎉✅ Sponsors appreciated that", channel=self.name)
