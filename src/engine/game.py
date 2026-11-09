@@ -444,15 +444,18 @@ class Game:
         # Get all cells
         all_cells: list[tuple[int, int]] = list(itertools.product(range(-TERRAIN_RADIUS, TERRAIN_RADIUS + 1), repeat=2))
 
-        # Filter cells based on region and return
+        # A band of `width` squares along one edge. Positive y is north and
+        # positive x is east, matching movement. The far side has to negate
+        # the same threshold; otherwise south and east swallow the centre.
+        threshold = TERRAIN_RADIUS - width
         if region == "north":
-            return [c for c in all_cells if c[1] > TERRAIN_RADIUS - width]
+            return [c for c in all_cells if c[1] > threshold]
         elif region == "south":
-            return [c for c in all_cells if c[1] < TERRAIN_RADIUS - width]
+            return [c for c in all_cells if c[1] < -threshold]
         elif region == "east":
-            return [c for c in all_cells if c[0] < TERRAIN_RADIUS - width]
+            return [c for c in all_cells if c[0] > threshold]
         elif region == "west":
-            return [c for c in all_cells if c[0] > TERRAIN_RADIUS - width]
+            return [c for c in all_cells if c[0] < -threshold]
         else:
             raise ValueError("Region must be one of 'north', 'south', 'east', 'west'")
 
@@ -679,8 +682,8 @@ class Game:
 
     def __resolve_hazard(self, hazard_region: Literal["north", "south", "east", "west"]) -> None:
         """
-        During the game, events can happen. Approximately half of the terrain
-        will be dangerous at night, and characters randomly move. The ones who
+        During the game, events can happen. A band along one edge of the arena
+        becomes dangerous at night, and characters randomly move. The ones who
         do not move out of the dangerous zone will be killed. Note that the
         event will focus regions where tributes have the lowest average hype.
         """

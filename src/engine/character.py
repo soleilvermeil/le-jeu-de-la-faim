@@ -20,6 +20,7 @@ class Character:
         self.hype: int = 0
         self.position: tuple[int] = (0, 0)
         self.__current_action: str = "none"
+        self.__rested: bool = False
         self.current_spotted_characters: int = 0
         self.bag: Bag = Bag()
         self.alive: bool = True
@@ -214,7 +215,7 @@ class Character:
         # If `show` is True, print a message to the character's channel
         if value / MAX_HYPE >= 0.3 and show:
             self.__game.save_message("🎉✅ Sponsors loved that", channel=self.name)
-        if value / MAX_HYPE >= 0.2 and show:
+        elif value / MAX_HYPE >= 0.2 and show:
             self.__game.save_message("🎉✅ Sponsors liked that", channel=self.name)
         elif value / MAX_HYPE >= 0.1 and show:
             self.__game.save_message("🎉✅ Sponsors appreciated that", channel=self.name)
@@ -379,6 +380,8 @@ class Character:
                     self.__game.save_message("🌾✅ You found some food", channel=self.name)
                 elif food == 0 and water > 0:
                     self.__game.save_message("🌾✅ You found some water", channel=self.name)
+                else:
+                    self.__game.save_message("🌾❌ You found nothing", channel=self.name)
                 self.__game.save_message("🌾✅ {character} gathered {food} food and {water} water".format(character=self.name, food=food, water=water), channel="debug")
 
             # If a weapon is found instead
@@ -420,12 +423,18 @@ class Character:
                 water = resources - food
                 food *= self.__game.map_.cells[self.position].food_multiplier
                 water *= self.__game.map_.cells[self.position].water_multiplier
+                food = round(food)
+                water = round(water)
+                self.bag.food += food
+                self.bag.water += water
                 if food > 0 and water > 0:
-                    self.__game.save_message("👻🍒 You found some food while hiding", channel=self.name)
-                elif food > 0 and water == 0:
-                    self.__game.save_message("👻💧 You found some water while hiding", channel=self.name)
-                elif food == 0 and water > 0:
                     self.__game.save_message("👻🌾 You found some food and water while hiding", channel=self.name)
+                elif food > 0 and water == 0:
+                    self.__game.save_message("👻🍒 You found some food while hiding", channel=self.name)
+                elif food == 0 and water > 0:
+                    self.__game.save_message("👻💧 You found some water while hiding", channel=self.name)
+                else:
+                    self.__game.save_message("👻❌ You found nothing while hiding", channel=self.name)
                 self.__game.save_message("👻✅ {character} found {food} food and {water} water while hiding".format(character=self.name, food=food, water=water), channel="debug")
 
             # If a weapon is found instead
@@ -449,6 +458,10 @@ class Character:
         Rest. The character regains some energy. NOTE: this method should only
         be called if the character is not attacked during the resolve.
         """
+        # Remember that the rest was completed. Choosing to rest is not enough:
+        # a hunt or a disaster can cancel it before this method runs.
+        self.__rested = True
+
         # Add energy
         self.energy = min(self.energy + 1, MAX_ENERGY)
 
@@ -457,6 +470,11 @@ class Character:
 
 
     def evolve(self, time: Literal["day", "night"]) -> None:
+
+        # Consume the rest flag now, so a cancelled rest cannot leak into the
+        # next sun change if this method returns early.
+        rested = self.__rested
+        self.__rested = False
 
         # Hype: Each turn, a character might receive a gift if their hype is high enough
         if random_bool(self.hype / MAX_HYPE):
@@ -584,7 +602,7 @@ class Character:
         # 1 energy. If they have no energy, they will lose mental health
         # instead. During the day, energy does not change.
         if time == "night":
-            if self.__current_action == "rest":
+            if rested:
                 self.__game.save_message("🛌✅ You have regained some energy", channel=self.name)
                 self.__game.save_message("🛌✅ {character} has regained 1 energy".format(character=self.name), channel="debug")
             else:
