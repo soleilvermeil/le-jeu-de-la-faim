@@ -380,6 +380,8 @@ class Character:
                     self.__game.save_message("🌾✅ You found some food", channel=self.name)
                 elif food == 0 and water > 0:
                     self.__game.save_message("🌾✅ You found some water", channel=self.name)
+                else:
+                    self.__game.save_message("🌾❌ You found nothing", channel=self.name)
                 self.__game.save_message("🌾✅ {character} gathered {food} food and {water} water".format(character=self.name, food=food, water=water), channel="debug")
 
             # If a weapon is found instead
