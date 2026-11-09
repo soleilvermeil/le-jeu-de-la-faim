@@ -20,6 +20,7 @@ class Character:
         self.hype: int = 0
         self.position: tuple[int] = (0, 0)
         self.__current_action: str = "none"
+        self.__rested: bool = False
         self.current_spotted_characters: int = 0
         self.bag: Bag = Bag()
         self.alive: bool = True
@@ -455,6 +456,10 @@ class Character:
         Rest. The character regains some energy. NOTE: this method should only
         be called if the character is not attacked during the resolve.
         """
+        # Remember that the rest was completed. Choosing to rest is not enough:
+        # a hunt or a disaster can cancel it before this method runs.
+        self.__rested = True
+
         # Add energy
         self.energy = min(self.energy + 1, MAX_ENERGY)
 
@@ -463,6 +468,11 @@ class Character:
 
 
     def evolve(self, time: Literal["day", "night"]) -> None:
+
+        # Consume the rest flag now, so a cancelled rest cannot leak into the
+        # next sun change if this method returns early.
+        rested = self.__rested
+        self.__rested = False
 
         # Hype: Each turn, a character might receive a gift if their hype is high enough
         if random_bool(self.hype / MAX_HYPE):
@@ -590,7 +600,7 @@ class Character:
         # 1 energy. If they have no energy, they will lose mental health
         # instead. During the day, energy does not change.
         if time == "night":
-            if self.__current_action == "rest":
+            if rested:
                 self.__game.save_message("🛌✅ You have regained some energy", channel=self.name)
                 self.__game.save_message("🛌✅ {character} has regained 1 energy".format(character=self.name), channel="debug")
             else:
